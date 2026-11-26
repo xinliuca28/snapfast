@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <!-- iOS Web App 原生全屏与状态栏配置 -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="SnapFast" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="theme-color" content="#f8fafc" />
+  <link id="appleTouchIcon" rel="apple-touch-icon" href="" />
+  <title>SnapFast · 简食轻断</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --sat: env(safe-area-inset-top, 20px);
+      --sab: env(safe-area-inset-bottom, 20px);
+    }
+    html, body {
+      overscroll-behavior-y: none;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+      user-select: none;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "PingFang SC", sans-serif;
+    }
+    input, select, textarea {
+      user-select: text;
+      font-size: 16px !important; /* 防止 iOS Safari 点击输入框自动放大页面 */
+    }
+    .safe-top {
+      padding-top: calc(var(--sat) + 10px);
+    }
+    .safe-bottom-bar {
+      padding-bottom: calc(var(--sab) + 10px);
+    }
+    .main-scroll-pad {
+      padding-bottom: calc(var(--sab) + 96px);
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased main-scroll-pad">
+  <!-- iOS 顶部毛玻璃导航栏 -->
+  <header class="sticky top-0 z-30 bg-slate-50/85 backdrop-blur-xl border-b border-slate-200/60 safe-top px-4 pb-2.5">
+    <div class="max-w-md mx-auto flex items-center justify-between">
+      <div>
+        <h1 class="text-xl font-bold tracking-tight text-slate-900">SnapFast</h1>
+        <p class="text-[11px] text-slate-500">拍照识热量 · 16:8 轻断食 · 体重打卡</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="toggleCalendarBtn" class="px-3 py-1.5 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 active:scale-95 transition">
+          📅 日历
+        </button>
+        <button id="openSettingsBtn" class="px-3 py-1.5 text-xs font-semibold rounded-full bg-white border border-slate-200 shadow-xs active:scale-95 transition">
+          ⚙️ 设置
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="app" class="max-w-md mx-auto px-4 pt-3 space-y-3.5">
+    <!-- iOS 添加主屏幕提示条（仅在 Safari 浏览器非全屏模式下显示） -->
+    <div id="iosInstallBanner" class="hidden bg-emerald-900 text-white rounded-2xl p-3 text-xs flex items-center justify-between gap-2 shadow-sm">
+      <div>
+        <div class="font-semibold">📲 安装到 iPhone 主屏幕</div>
+        <div class="text-emerald-200 text-[11px] mt-0.5">点击 Safari 底部「分享」图标 →「添加到主屏幕」，即可全屏像原生 App 一样使用</div>
+      </div>
+      <button id="dismissInstallBtn" class="text-emerald-300 text-sm px-1.5">✕</button>
+    </div>
+
+    <!-- 日期切换条 -->
+    <div class="bg-white rounded-2xl px-3 py-2 shadow-xs border border-slate-100 flex items-center justify-between text-xs">
+      <button id="prevDayBtn" class="px-3 py-1.5 rounded-xl bg-slate-100 active:bg-slate-200 font-medium text-slate-700">◀ 前一天</button>
+      <div class="text-center">
+        <span id="selectedDateLabel" class="font-bold text-slate-900 text-sm">今天</span>
+        <span id="todayBadge" class="ml-1.5 text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 font-semibold">TODAY</span>
+      </div>
+      <button id="nextDayBtn" class="px-3 py-1.5 rounded-xl bg-slate-100 active:bg-slate-200 font-medium text-slate-700">后一天 ▶</button>
+    </div>
+
+    <!-- 展开式日历打卡面板 -->
+    <section id="calendarSection" class="hidden bg-white rounded-2xl p-4 shadow-xs border border-emerald-200 space-y-3">
+      <div class="flex items-center justify-between">
+        <button id="prevMonthBtn" class="px-2.5 py-1 text-xs rounded-xl bg-slate-100 active:bg-slate-200">◀ 上月</button>
+        <div class="text-center">
+          <h2 id="calendarMonthTitle" class="text-sm font-bold text-slate-900">2026年11月</h2>
+          <p class="text-[11px] text-slate-500">已打卡 <strong id="monthCheckinCount" class="text-emerald-600">0</strong> 天 · 热量达标 <strong id="monthGoalCount" class="text-emerald-600">0</strong> 天</p>
+        </div>
+        <button id="nextMonthBtn" class="px-2.5 py-1 text-xs rounded-xl bg-slate-100 active:bg-slate-200">下月 ▶</button>
+      </div>
+
+      <div class="grid grid-cols-7 gap-1 text-center text-[11px] font-medium text-slate-400">
+        <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
+      </div>
+      <div id="calendarGrid" class="grid grid-cols-7 gap-1 text-center text-xs"></div>
+
+      <div class="flex items-center justify-between pt-1.5 text-[11px] text-slate-500 border-t border-slate-100">
+        <div class="flex items-center gap-3">
+          <span class="flex items-center gap-1"><i class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></i>热量达标</span>
+          <span class="flex items-center gap-1"><i class="w-2 h-2 rounded-full bg-amber-400 inline-block"></i>超预算</span>
+        </div>
+        <button id="jumpTodayBtn" class="text-emerald-600 font-semibold">回到今天</button>
+      </div>
+    </section>
+
+    <!-- 热量与宏量营养素卡片 -->
+    <section class="bg-white rounded-2xl p-4 shadow-xs border border-slate-100 space-y-3">
+      <div class="flex items-center justify-between">
+        <div>
+          <span class="text-xs text-slate-500">当日剩余热量预算</span>
+          <div class="text-3xl font-bold text-slate-900 tracking-tight mt-0.5"><span id="remainingKcal">1500</span> <span class="text-xs font-normal text-slate-400">kcal</span></div>
+        </div>
+        <div class="text-right text-xs text-slate-500 space-y-0.5">
+          <div>已摄入: <strong id="eatenKcal" class="text-slate-800">0</strong> kcal</div>
+          <div>目标: <span id="targetKcal">1500</span> kcal</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-2 pt-1 text-xs">
+        <div class="bg-emerald-50/80 rounded-xl p-2.5">
+          <div class="text-emerald-700 font-medium">蛋白质</div>
+          <div class="font-bold text-slate-800 mt-0.5"><span id="proteinVal">0</span> / <span id="proteinTarget">110</span>g</div>
+        </div>
+        <div class="bg-amber-50/80 rounded-xl p-2.5">
+          <div class="text-amber-700 font-medium">碳水</div>
+          <div class="font-bold text-slate-800 mt-0.5"><span id="carbsVal">0</span> / <span id="carbsTarget">100</span>g</div>
+        </div>
+        <div class="bg-rose-50/80 rounded-xl p-2.5">
+          <div class="text-rose-700 font-medium">脂肪</div>
+          <div class="font-bold text-slate-800 mt-0.5"><span id="fatVal">0</span> / <span id="fatTarget">55</span>g</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 每日体重记录与趋势卡片 -->
+    <section class="bg-white rounded-2xl p-4 shadow-xs border border-slate-100 space-y-2.5">
+      <div class="flex items-center justify-between gap-2">
+        <div class="min-w-0">
+          <h2 class="text-sm font-semibold text-slate-800">体重记录与曲线</h2>
+          <p id="weightDeltaText" class="text-[11px] text-slate-500 truncate">记录晨起空腹体重，追踪减脂趋势</p>
+        </div>
+        <div class="flex items-center gap-1.5 shrink-0">
+          <input id="weightInput" type="number" inputmode="decimal" step="0.1" placeholder="0.0" class="w-20 px-2.5 py-1.5 rounded-xl border border-slate-200 text-right font-semibold focus:outline-none focus:border-emerald-500" />
+          <span id="weightUnitLabel" class="text-xs text-slate-500">kg</span>
+          <button id="saveWeightBtn" class="px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-semibold active:scale-95 transition">记录</button>
+        </div>
+      </div>
+      <div id="weightChartBox" class="pt-1"></div>
+    </section>
+
+    <!-- 16:8 轻断食卡片 -->
+    <section id="fastCard" class="rounded-2xl p-4 shadow-xs border bg-indigo-950 text-white border-indigo-900 space-y-2.5">
+      <div class="flex items-center justify-between">
+        <span id="fastBadge" class="text-xs px-2.5 py-0.5 rounded-full bg-indigo-800 text-indigo-100 font-medium">
+          断食中 · 16:8 模式
+        </span>
+        <button id="toggleFastModeBtn" class="text-xs text-indigo-200 underline">切换 16:8 / 进食</button>
+      </div>
+      <div class="flex items-baseline justify-between gap-2">
+        <div>
+          <div class="text-3xl font-bold tabular-nums tracking-tight" id="fastTimerText">00h 00m</div>
+          <div class="text-[11px] text-indigo-200 mt-0.5" id="fastStageText">已开启计时，点击右侧按钮可微调开始时间</div>
+        </div>
+        <div class="flex gap-1.5 shrink-0">
+          <button id="adjustFastBackBtn" class="px-2.5 py-1.5 rounded-xl bg-indigo-800/90 active:bg-indigo-700 text-xs font-medium">-1h 起始</button>
+          <button id="resetFastBtn" class="px-2.5 py-1.5 rounded-xl bg-indigo-800/90 active:bg-indigo-700 text-xs font-medium">重设</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 喝水与饮品分流卡片 -->
+    <section class="bg-white rounded-2xl p-4 shadow-xs border border-slate-100 space-y-3">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-sm font-semibold text-slate-800">有效补水与饮品</h2>
+          <p class="text-[11px] text-slate-500">纯水/美式/无糖茶只算补水；拿铁/饮品同步记热量</p>
+        </div>
+        <div class="text-sm font-bold text-sky-600"><span id="waterVal">0</span> / <span id="waterTarget">2000</span> ml</div>
+      </div>
+      <div class="w-full h-2.5 bg-sky-100 rounded-full overflow-hidden">
+        <div id="waterBar" class="h-full bg-sky-500 transition-all duration-300" style="width: 0%"></div>
+      </div>
+      <div class="grid grid-cols-2 gap-2" id="quickDrinkBtns">
+        <button data-ml="500" data-kcal="0" data-p="0" data-c="0" data-f="0" data-breaks="0" class="quick-item px-3 py-2.5 rounded-xl bg-sky-50 text-sky-800 text-xs font-semibold active:scale-95 transition text-left">
+          💧 大水杯 · 500ml
+        </button>
+        <button data-ml="350" data-kcal="5" data-p="0.3" data-c="0.5" data-f="0" data-breaks="0" class="quick-item px-3 py-2.5 rounded-xl bg-stone-100 text-stone-800 text-xs font-semibold active:scale-95 transition text-left">
+          ☕ 冰美式 · 0kcal
+        </button>
+        <button data-ml="300" data-kcal="150" data-p="8" data-c="11" data-f="8" data-breaks="1" class="quick-item px-3 py-2.5 rounded-xl bg-amber-50 text-amber-900 text-xs font-semibold active:scale-95 transition text-left">
+          🥛 冰拿铁 · 150kcal
+        </button>
+        <button data-ml="0" data-kcal="150" data-p="13" data-c="1.5" data-f="10" data-breaks="1" class="quick-item px-3 py-2.5 rounded-xl bg-emerald-50 text-emerald-900 text-xs font-semibold active:scale-95 transition text-left">
+          🥚 早餐蒸蛋 · 150kcal
+        </button>
+      </div>
+    </section>
+
+    <!-- AI 识别与动态微调区 -->
+    <section id="resultCard" class="hidden bg-white rounded-2xl p-4 shadow-md border-2 border-emerald-400 space-y-3">
+      <div class="flex items-start justify-between gap-2">
+        <div>
+          <span class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold">AI 识别拆解</span>
+          <h3 id="mealTitle" class="text-base font-bold text-slate-900 mt-1"></h3>
+        </div>
+        <button id="closeResultBtn" class="text-xs text-slate-400 px-2 py-1">取消</button>
+      </div>
+
+      <div id="itemsList" class="divide-y divide-slate-100 text-xs"></div>
+      <div id="modifiersBox" class="space-y-2 pt-1"></div>
+
+      <div class="flex gap-2 pt-1">
+        <input id="refineText" type="text" placeholder="补充说明，如：只吃一半、加了麻酱..." class="flex-1 px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500" />
+        <button id="refineBtn" class="px-3.5 py-2 rounded-xl bg-slate-900 text-white text-xs font-semibold shrink-0">重算</button>
+      </div>
+
+      <p id="coachTip" class="text-xs bg-slate-50 p-2.5 rounded-xl text-slate-600 leading-relaxed"></p>
+
+      <div class="flex items-center justify-between pt-1">
+        <div class="text-sm font-bold text-slate-900">
+          合计: <span id="previewKcal" class="text-emerald-600 text-base">0</span> kcal
+          <div class="text-[11px] font-normal text-slate-500" id="previewMacros"></div>
+        </div>
+        <button id="confirmEntryBtn" class="px-5 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-bold active:scale-95 transition shadow-xs">
+          确认入账
+        </button>
+      </div>
+    </section>
+
+    <!-- 当日记录明细 -->
+    <section class="bg-white rounded-2xl p-4 shadow-xs border border-slate-100 space-y-2">
+      <div class="flex items-center justify-between">
+        <h2 class="text-sm font-semibold text-slate-800"><span id="logSectionDateTitle">今日</span>饮食与饮品明细</h2>
+        <button id="clearTodayBtn" class="text-xs text-rose-500">清空当日</button>
+      </div>
+      <div id="logsContainer" class="text-xs text-slate-500 space-y-2">
+        <p class="text-slate-400 py-2">当日暂无记录，点击底部相机拍摄食物、饮品、坚果或零食。</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- iOS 底部悬浮操作栏（适配底部安全区） -->
+  <div class="fixed bottom-0 left-0 right-0 z-30 bg-white/90 backdrop-blur-xl border-t border-slate-200/70 px-4 pt-2.5 safe-bottom-bar">
+    <div class="max-w-md mx-auto flex items-center gap-2.5">
+      <!-- 去掉 capture 强制属性，让 iPhone 弹出原生“拍照 / 照片图库 / 选取文件”菜单 -->
+      <input id="cameraInput" type="file" accept="image/*" class="hidden" />
+      <button id="takePhotoBtn" class="flex-1 py-3 px-4 rounded-2xl bg-emerald-600 active:bg-emerald-700 text-white text-sm font-bold flex items-center justify-center gap-2 shadow-sm transition">
+        <span>📷 拍照 / 相册识热量</span>
+      </button>
+      <button id="quickTextBtn" class="py-3 px-4 rounded-2xl bg-slate-100 active:bg-slate-200 text-slate-800 text-xs font-semibold shrink-0">
+        ✍️ 文字记
+      </button>
+    </div>
+  </div>
+
+  <!-- 设置与备份弹窗 -->
+  <div id="settingsModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white rounded-t-3xl sm:rounded-2xl max-w-md w-full p-5 space-y-3.5 max-h-[90vh] overflow-y-auto safe-bottom-bar">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-slate-900">API 密钥、目标与数据备份</h3>
+        <button id="closeSettingsBtn" class="text-xs text-slate-400 px-2 py-1">关闭</button>
+      </div>
+
+      <div class="space-y-1">
+        <label class="text-xs font-medium text-slate-600">Gemini API Key（仅存本机）</label>
+        <input id="apiKeyInput" type="password" placeholder="AIza..." class="w-full px-3 py-2 rounded-xl border border-slate-200" />
+      </div>
+
+      <div class="grid grid-cols-2 gap-2.5 text-xs">
+        <div>
+          <label class="text-slate-500">热量目标 (kcal)</label>
+          <input id="cfgKcal" type="number" inputmode="numeric" class="w-full px-3 py-2 rounded-xl border border-slate-200 mt-1" />
+        </div>
+        <div>
+          <label class="text-slate-500">饮水目标 (ml)</label>
+          <input id="cfgWater" type="number" inputmode="numeric" class="w-full px-3 py-2 rounded-xl border border-slate-200 mt-1" />
+        </div>
+        <div>
+          <label class="text-slate-500">蛋白质 (g)</label>
+          <input id="cfgProtein" type="number" inputmode="numeric" class="w-full px-3 py-2 rounded-xl border border-slate-200 mt-1" />
+        </div>
+        <div>
+          <label class="text-slate-500">碳水上限 (g)</label>
+          <input id="cfgCarbs" type="number" inputmode="numeric" class="w-full px-3 py-2 rounded-xl border border-slate-200 mt-1" />
+        </div>
+        <div class="col-span-2">
+          <label class="text-slate-500">体重单位</label>
+          <select id="cfgWeightUnit" class="w-full px-3 py-2 rounded-xl border border-slate-200 mt-1 bg-white">
+            <option value="kg">公斤 (kg)</option>
+            <option value="lbs">磅 (lbs)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 备份与恢复（防止 iOS 清理缓存丢失记录） -->
+      <div class="pt-2 border-t border-slate-100 space-y-2">
+        <div class="text-xs font-medium text-slate-600">本地数据备份（建议每周导出一次到 iCloud 文件）</div>
+        <div class="flex gap-2">
+          <button id="exportBackupBtn" type="button" class="flex-1 py-2 px-3 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold">⬇️ 导出 JSON 备份</button>
+          <button id="importBackupBtn" type="button" class="flex-1 py-2 px-3 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold">⬆️ 导入备份恢复</button>
+          <input id="importFileInput" type="file" accept=".json,application/json" class="hidden" />
+        </div>
+      </div>
+
+      <button id="saveSettingsBtn" class="w-full py-3 rounded-2xl bg-emerald-600 text-white text-sm font-bold mt-2">
+        保存配置
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // 自动生成 iPhone 主屏幕高清圆角图标 (apple-touch-icon)
+    (function generateAppleTouchIcon() {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = 180;
+        canvas.height = 180;
+        const ctx = canvas.getContext('2d');
+        const grad = ctx.createLinearGradient(0, 0, 180, 180);
+        grad.addColorStop(0, '#059669');
+        grad.addColorStop(1, '#064e3b');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 180, 180);
+        ctx.font = '84px -apple-system, Apple Color Emoji, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('🥗', 90, 96);
+        document.getElementById('appleTouchIcon').href = canvas.toDataURL('image/png');
+      } catch (e) {}
+    })();
+
+    // 判断是否为 iOS Safari 浏览器且尚未添加到主屏幕
+    (function checkIosStandalone() {
+      const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+      const dismissed = localStorage.getItem('snapfast_ios_banner_dismissed') === '1';
+      if (isIos && !isStandalone && !dismissed) {
+        document.getElementById('iosInstallBanner').classList.remove('hidden');
+      }
+      document.getElementById('dismissInstallBtn').addEventListener('click', () => {
+        document.getElementById('iosInstallBanner').classList.add('hidden');
+        localStorage.setItem('snapfast_ios_banner_dismissed', '1');
+      });
+    })();
+
+    const STORAGE_KEY = 'snapfast_v2_state';
+    const LEGACY_KEY = 'snapfast_v1_state';
+
+    function getLocalDateStr(dateObj = new Date()) {
+      const y = dateObj.getFullYear();
+      const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const d = String(dateObj.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function shiftDateStr(dateStr, deltaDays) {
+      const [y, m, d] = dateStr.split('-').map(Number);
+      const dt = new Date(y, m - 1, d + deltaDays);
+      return getLocalDateStr(dt);
+    }
+
+    const defaultState = {
+      apiKey: '',
+      targets: { kcal: 1500, protein: 110, carbs: 100, fat: 55, water: 2000, weightUnit: 'kg' },
+      fasting: { isFasting: true, targetHours: 16, startTime: Date.now() },
+      dailyLogs: {},
+      weights: {}
+    };
+
+    function loadInitialState() {
+      const savedV2 = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+      if (savedV2) return savedV2;
+      const legacy = JSON.parse(localStorage.getItem(LEGACY_KEY) || 'null');
+      const base = structuredClone(defaultState);
+      if (legacy) {
+        base.apiKey = legacy.apiKey || '';
+        base.targets = { ...base.targets, ...(legacy.targets || {}) };
+        base.fasting = legacy.fasting || base.fasting;
+        if (Array.isArray(legacy.logs) && legacy.logs.length) {
+          base.dailyLogs[getLocalDateStr()] = legacy.logs;
+        }
+      }
+      return base;
+    }
+
+    let state = loadInitialState();
+    let selectedDate = getLocalDateStr();
+    let calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    let currentBaseImage = null;
+    let currentDraft = null;
+    let selectedModifiers = {};
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function getLogsForDate(dateStr) {
+      if (!state.dailyLogs[dateStr]) state.dailyLogs[dateStr] = [];
+      return state.dailyLogs[dateStr];
+    }
+
+    function formatDateHeader(dateStr) {
+      const todayStr = getLocalDateStr();
+      const yesterdayStr = shiftDateStr(todayStr, -1);
+      const [, m, d] = dateStr.split('-');
+      if (dateStr === todayStr) return `${Number(m)}月${Number(d)}日`;
+      if (dateStr === yesterdayStr) return `${Number(m)}月${Number(d)}日 (昨天)`;
+      return `${dateStr}`;
+    }
+
+    function renderDateBar() {
+      const todayStr = getLocalDateStr();
+      document.getElementById('selectedDateLabel').textContent = formatDateHeader(selectedDate);
+      document.getElementById('todayBadge').classList.toggle('hidden', selectedDate !== todayStr);
+      document.getElementById('logSectionDateTitle').textContent = selectedDate === todayStr ? '今日' : `${Number(selectedDate.split('-')[1])}月${Number(selectedDate.split('-')[2])}日`;
+    }
+
+    function renderDashboard() {
+      renderDateBar();
+      const logs = getLogsForDate(selectedDate);
+      let eatenKcal = 0, protein = 0, carbs = 0, fat = 0, water = 0;
+      for (const entry of logs) {
+        eatenKcal += Number(entry.calories || 0);
+        protein += Number(entry.protein_g || 0);
+        carbs += Number(entry.carbs_g || 0);
+        fat += Number(entry.fat_g || 0);
+        water += Number(entry.hydration_ml || 0);
+      }
+      eatenKcal = Math.round(eatenKcal);
+      document.getElementById('eatenKcal').textContent = eatenKcal;
+      document.getElementById('targetKcal').textContent = state.targets.kcal;
+      const rem = state.targets.kcal - eatenKcal;
+      const remEl = document.getElementById('remainingKcal');
+      remEl.textContent = Math.max(0, rem);
+      remEl.className = rem < 0 ? 'text-rose-600' : 'text-slate-900';
+
+      document.getElementById('proteinVal').textContent = Math.round(protein * 10) / 10;
+      document.getElementById('proteinTarget').textContent = state.targets.protein;
+      document.getElementById('carbsVal').textContent = Math.round(carbs * 10) / 10;
+      document.getElementById('carbsTarget').textContent = state.targets.carbs;
+      document.getElementById('fatVal').textContent = Math.round(fat * 10) / 10;
+      document.getElementById('fatTarget').textContent = state.targets.fat;
+
+      document.getElementById('waterVal').textContent = Math.round(water);
+      document.getElementById('waterTarget').textContent = state.targets.water;
+      const pct = Math.min(100, Math.round((water / (state.targets.water || 2000)) * 100));
+      document.getElementById('waterBar').style.width = pct + '%';
+
+      const logsEl = document.getElementById('logsContainer');
+      if (!logs.length) {
+        logsEl.innerHTML = '<p class="text-slate-400 py-2">当日暂无记录，点击底部相机拍摄食物、饮品、坚果或零食。</p>';
+      } else {
+        logsEl.innerHTML = logs.map((item, idx) => `
+          <div class="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
+            <div>
+              <div class="font-medium text-slate-800">${escapeHtml(item.title)}</div>
+              <div class="text-[11px] text-slate-400">P ${item.protein_g}g · C ${item.carbs_g}g · F ${item.fat_g}g${item.hydration_ml ? ` · 补水 ${item.hydration_ml}ml` : ''}</div>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <span class="font-semibold text-slate-700">${Math.round(item.calories)} kcal</span>
+              <button type="button" data-del-idx="${idx}" class="del-log-btn text-slate-300 active:text-rose-500 text-sm px-1.5">✕</button>
+            </div>
+          </div>
+        `).reverse().join('');
+
+        logsEl.querySelectorAll('.del-log-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const idx = Number(btn.dataset.delIdx);
+            state.dailyLogs[selectedDate].splice(idx, 1);
+            saveState();
+            renderDashboard();
+            renderCalendar();
+          });
+        });
+      }
+
+      renderWeightSection();
+      renderCalendar();
+    }
+
+    function renderWeightSection() {
+      const unit = state.targets.weightUnit || 'kg';
+      document.getElementById('weightUnitLabel').textContent = unit;
+      const curWeight = state.weights[selectedDate];
+      document.getElementById('weightInput').value = curWeight !== undefined ? curWeight : '';
+
+      const sortedDates = Object.keys(state.weights).sort();
+      const deltaEl = document.getElementById('weightDeltaText');
+      const chartBox = document.getElementById('weightChartBox');
+
+      if (!sortedDates.length) {
+        deltaEl.textContent = '记录晨起空腹体重，追踪减脂趋势';
+        chartBox.innerHTML = '';
+        return;
+      }
+
+      const firstW = state.weights[sortedDates[0]];
+      const latestW = state.weights[sortedDates[sortedDates.length - 1]];
+      const diffTotal = Math.round((latestW - firstW) * 10) / 10;
+      const diffSign = diffTotal > 0 ? `+${diffTotal}` : `${diffTotal}`;
+      deltaEl.innerHTML = `最新 <strong>${latestW}${unit}</strong> · 累计 <strong class="${diffTotal <= 0 ? 'text-emerald-600' : 'text-rose-600'}">${diffSign}${unit}</strong>（${sortedDates.length}天）`;
+
+      const recentDates = sortedDates.slice(-8);
+      if (recentDates.length < 2) {
+        chartBox.innerHTML = '<div class="text-[11px] text-slate-400">再记录 1 天体重即可生成趋势折线图</div>';
+        return;
+      }
+
+      const vals = recentDates.map(d => state.weights[d]);
+      const minV = Math.min(...vals) - 0.5;
+      const maxV = Math.max(...vals) + 0.5;
+      const w = 320, h = 64, padX = 18, padY = 12;
+      const points = vals.map((v, i) => {
+        const x = padX + (i / (vals.length - 1)) * (w - padX * 2);
+        const y = h - padY - ((v - minV) / (maxV - minV || 1)) * (h - padY * 2);
+        return { x, y, v, d: recentDates[i].slice(5) };
+      });
+      const poly = points.map(p => `${p.x},${p.y}`).join(' ');
+
+      chartBox.innerHTML = `
+        <svg viewBox="0 0 ${w} ${h + 14}" class="w-full h-20 overflow-visible">
+          <polyline fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="${poly}" />
+          ${points.map(p => `
+            <circle cx="${p.x}" cy="${p.y}" r="3.5" fill="#059669" />
+            <text x="${p.x}" y="${p.y - 6}" text-anchor="middle" font-size="9" fill="#334155" font-weight="600">${p.v}</text>
+            <text x="${p.x}" y="${h + 10}" text-anchor="middle" font-size="8" fill="#94a3b8">${p.d}</text>
+          `).join('')}
+        </svg>
+      `;
+    }
+
+    function renderCalendar() {
+      const year = calendarMonth.getFullYear();
+      const month = calendarMonth.getMonth();
+      document.getElementById('calendarMonthTitle').textContent = `${year}年${month + 1}月`;
+
+      const firstDayWeek = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const todayStr = getLocalDateStr();
+
+      let checkinCount = 0;
+      let goalCount = 0;
+      let cellsHtml = '';
+
+      for (let i = 0; i < firstDayWeek; i++) {
+        cellsHtml += '<div></div>';
+      }
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const logs = state.dailyLogs[dateStr] || [];
+        const weight = state.weights[dateStr];
+        const hasLog = logs.length > 0;
+        const totalKcal = logs.reduce((sum, it) => sum + Number(it.calories || 0), 0);
+
+        if (hasLog || weight !== undefined) checkinCount++;
+        if (hasLog && totalKcal <= state.targets.kcal) goalCount++;
+
+        const isSelected = dateStr === selectedDate;
+        const isToday = dateStr === todayStr;
+
+        let dotHtml = '<span class="w-1.5 h-1.5 rounded-full bg-transparent inline-block"></span>';
+        if (hasLog) {
+          dotHtml = totalKcal <= state.targets.kcal
+            ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>'
+            : '<span class="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block"></span>';
+        }
+
+        cellsHtml += `
+          <button type="button" data-cal-date="${dateStr}" class="cal-day-btn py-1.5 rounded-xl flex flex-col items-center justify-center border ${isSelected ? 'bg-emerald-600 text-white border-emerald-600 font-bold' : (isToday ? 'border-emerald-400 bg-emerald-50/40 text-slate-900 font-semibold' : 'border-transparent active:bg-slate-100 text-slate-700')}">
+            <span>${d}</span>
+            <div class="flex items-center gap-0.5 mt-0.5">${dotHtml}</div>
+            <span class="text-[9px] leading-none mt-0.5 ${isSelected ? 'text-emerald-100' : 'text-slate-400'}">${weight !== undefined ? weight : '&nbsp;'}</span>
+          </button>
+        `;
+      }
+
+      document.getElementById('monthCheckinCount').textContent = checkinCount;
+      document.getElementById('monthGoalCount').textContent = goalCount;
+
+      const grid = document.getElementById('calendarGrid');
+      grid.innerHTML = cellsHtml;
+      grid.querySelectorAll('.cal-day-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          selectedDate = btn.dataset.calDate;
+          renderDashboard();
+        });
+      });
+    }
+
+    function renderFasting() {
+      const elapsedMs = Math.max(0, Date.now() - state.fasting.startTime);
+      const totalMins = Math.floor(elapsedMs / 60000);
+      const hrs = Math.floor(totalMins / 60);
+      const mins = totalMins % 60;
+      document.getElementById('fastTimerText').textContent = `${String(hrs).padStart(2, '0')}h ${String(mins).padStart(2, '0')}m`;
+
+      const card = document.getElementById('fastCard');
+      const badge = document.getElementById('fastBadge');
+      const stage = document.getElementById('fastStageText');
+
+      if (state.fasting.isFasting) {
+        card.className = 'rounded-2xl p-4 shadow-xs border bg-indigo-950 text-white border-indigo-900 space-y-2.5';
+        badge.className = 'text-xs px-2.5 py-0.5 rounded-full bg-indigo-800 text-indigo-100 font-medium';
+        badge.textContent = `断食中 · ${state.fasting.targetHours}:8 模式`;
+        const rem = Math.max(0, state.fasting.targetHours * 60 - totalMins);
+        const remH = Math.floor(rem / 60);
+        const remM = rem % 60;
+        let phase = hrs >= 14 ? '脂肪加速动员阶段' : (hrs >= 12 ? '糖原逐步消耗阶段' : '血糖平稳过渡阶段');
+        stage.textContent = `${phase} · 距满 ${state.fasting.targetHours}h 剩 ${remH}h ${remM}m`;
+      } else {
+        card.className = 'rounded-2xl p-4 shadow-xs border bg-amber-50 text-slate-900 border-amber-200 space-y-2.5';
+        badge.className = 'text-xs px-2.5 py-0.5 rounded-full bg-amber-200 text-amber-900 font-medium';
+        badge.textContent = '进食窗口中';
+        stage.textContent = `已开启进食计时（${hrs}h ${mins}m），结束进食可切回断食`;
+      }
+    }
+
+    function escapeHtml(str) {
+      return String(str || '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s]));
+    }
+
+    // 针对 iPhone 高像素照片做客户端轻量压缩（防止照片太大导致上传慢或超限）
+    function compressImageFile(file, maxSide = 1280, quality = 0.82) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error('读取图片失败'));
+        reader.onload = (ev) => {
+          const img = new Image();
+          img.onerror = () => reject(new Error('解析图片失败'));
+          img.onload = () => {
+            let { width, height } = img;
+            if (width > maxSide || height > maxSide) {
+              if (width > height) {
+                height = Math.round((height * maxSide) / width);
+                width = maxSide;
+              } else {
+                width = Math.round((width * maxSide) / height);
+                height = maxSide;
+              }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            const dataUrl = canvas.toDataURL('image/jpeg', quality);
+            resolve({ base64Image: dataUrl.split(',')[1], mimeType: 'image/jpeg' });
+          };
+          img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function callGeminiVision({ base64Image, mimeType, noteText }) {
+      if (!state.apiKey) {
+        alert('请先点击右上角「⚙️ 设置」，填入你的 Gemini API Key。');
+        return null;
+      }
+      const prompt = `你是专业临床营养师。请分析用户的餐食、饮品、坚果、水果或零食记录。
+拆解所有可见或提到的项目，估算克重/容量、热量、蛋白质、碳水、脂肪与有效补水量(hydration_ml，无糖美式/茶/白水按容量的85%-100%算补水，拿铁按85%算补水，固体为0)。
+同时为当前项目动态生成 0~2 个最关键的微调维度（如烹饪用油、牛排部位、坚果份量、汤底酱汁、甜度等），每个选项给出 calorie_delta、protein_delta、carbs_delta、fat_delta。
+严格输出 JSON：
+{
+  "title": "本餐或饮品简短标题",
+  "breaks_fast": true,
+  "hydration_ml": 0,
+  "items": [{"name": "名称", "weight_g": 100, "calories": 150, "protein_g": 10, "carbs_g": 5, "fat_g": 8}],
+  "modifiers": [
+    {
+      "label": "微调维度名",
+      "options": [
+        {"text": "选项A", "calorie_delta": -50, "protein_delta": 0, "carbs_delta": 0, "fat_delta": -5},
+        {"text": "默认估算", "calorie_delta": 0, "protein_delta": 0, "carbs_delta": 0, "fat_delta": 0}
+      ]
+    }
+  ],
+  "coach_tip": "一句话减脂建议"
+}`;
+
+      const parts = [];
+      if (base64Image) {
+        parts.push({ inline_data: { mime_type: mimeType || 'image/jpeg', data: base64Image } });
+      }
+      parts.push({ text: noteText ? `${prompt}\n用户补充说明：${noteText}` : prompt });
+
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(state.apiKey)}`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts }],
+          generationConfig: { responseMimeType: 'application/json' }
+        })
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`API 请求失败 (${res.status}): ${errText.slice(0, 120)}`);
+      }
+      const data = await res.json();
+      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+      return JSON.parse(rawText);
+    }
+
+    function computePreviewTotals() {
+      if (!currentDraft) return { calories: 0, protein_g: 0, carbs_g: 0, fat_g: 0 };
+      let cal = 0, p = 0, c = 0, f = 0;
+      for (const it of (currentDraft.items || [])) {
+        cal += Number(it.calories || 0);
+        p += Number(it.protein_g || 0);
+        c += Number(it.carbs_g || 0);
+        f += Number(it.fat_g || 0);
+      }
+      (currentDraft.modifiers || []).forEach((mod, idx) => {
+        const optIdx = selectedModifiers[idx] ?? 0;
+        const opt = mod.options?.[optIdx];
+        if (opt) {
+          cal += Number(opt.calorie_delta || 0);
+          p += Number(opt.protein_delta || 0);
+          c += Number(opt.carbs_delta || 0);
+          f += Number(opt.fat_delta || 0);
+        }
+      });
+      return {
+        calories: Math.max(0, Math.round(cal)),
+        protein_g: Math.max(0, Math.round(p * 10) / 10),
+        carbs_g: Math.max(0, Math.round(c * 10) / 10),
+        fat_g: Math.max(0, Math.round(f * 10) / 10)
+      };
+    }
+
+    function renderDraftCard() {
+      if (!currentDraft) {
+        document.getElementById('resultCard').classList.add('hidden');
+        return;
+      }
+      const card = document.getElementById('resultCard');
+      card.classList.remove('hidden');
+      document.getElementById('mealTitle').textContent = currentDraft.title || '已识别餐食';
+      document.getElementById('coachTip').textContent = currentDraft.coach_tip || '';
+
+      document.getElementById('itemsList').innerHTML = (currentDraft.items || []).map(it => `
+        <div class="py-1.5 flex justify-between">
+          <span>${escapeHtml(it.name)} <span class="text-slate-400">(${it.weight_g || 0}g)</span></span>
+          <span class="font-medium text-slate-700">${Math.round(it.calories || 0)} kcal</span>
+        </div>
+      `).join('');
+
+      const modBox = document.getElementById('modifiersBox');
+      modBox.innerHTML = (currentDraft.modifiers || []).map((mod, mIdx) => {
+        const activeIdx = selectedModifiers[mIdx] ?? 0;
+        return `
+          <div class="bg-slate-50 p-2.5 rounded-xl">
+            <div class="text-[11px] font-medium text-slate-600 mb-1.5">${escapeHtml(mod.label)}</div>
+            <div class="flex flex-wrap gap-1.5">
+              ${(mod.options || []).map((opt, oIdx) => `
+                <button type="button" data-midx="${mIdx}" data-oidx="${oIdx}" class="mod-btn px-3 py-1.5 rounded-xl text-xs border ${oIdx === activeIdx ? 'bg-emerald-600 text-white border-emerald-600 font-semibold' : 'bg-white text-slate-700 border-slate-200'}">
+                  ${escapeHtml(opt.text)}
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      modBox.querySelectorAll('.mod-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          selectedModifiers[Number(btn.dataset.midx)] = Number(btn.dataset.oidx);
+          renderDraftCard();
+        });
+      });
+
+      const totals = computePreviewTotals();
+      document.getElementById('previewKcal').textContent = totals.calories;
+      document.getElementById('previewMacros').textContent = `P ${totals.protein_g}g · C ${totals.carbs_g}g · F ${totals.fat_g}g`;
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // 日期与日历事件
+    document.getElementById('prevDayBtn').addEventListener('click', () => {
+      selectedDate = shiftDateStr(selectedDate, -1);
+      renderDashboard();
+    });
+    document.getElementById('nextDayBtn').addEventListener('click', () => {
+      selectedDate = shiftDateStr(selectedDate, 1);
+      renderDashboard();
+    });
+    document.getElementById('toggleCalendarBtn').addEventListener('click', () => {
+      document.getElementById('calendarSection').classList.toggle('hidden');
+      renderCalendar();
+    });
+    document.getElementById('prevMonthBtn').addEventListener('click', () => {
+      calendarMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() - 1, 1);
+      renderCalendar();
+    });
+    document.getElementById('nextMonthBtn').addEventListener('click', () => {
+      calendarMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 1);
+      renderCalendar();
+    });
+    document.getElementById('jumpTodayBtn').addEventListener('click', () => {
+      selectedDate = getLocalDateStr();
+      calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+      renderDashboard();
+    });
+
+    // 体重保存
+    document.getElementById('saveWeightBtn').addEventListener('click', () => {
+      const raw = document.getElementById('weightInput').value.trim();
+      if (!raw) {
+        delete state.weights[selectedDate];
+      } else {
+        const val = parseFloat(raw);
+        if (isNaN(val) || val <= 0) return;
+        state.weights[selectedDate] = Math.round(val * 10) / 10;
+      }
+      saveState();
+      renderDashboard();
+    });
+
+    // 快捷饮品/早餐按钮
+    document.querySelectorAll('.quick-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const isToday = selectedDate === getLocalDateStr();
+        const breaks = btn.dataset.breaks === '1';
+        if (isToday && breaks && state.fasting.isFasting) {
+          const ok = confirm('当前处于断食计时中，记录此项将结束本次断食并进入进食窗口，是否继续？');
+          if (!ok) return;
+          state.fasting.isFasting = false;
+          state.fasting.startTime = Date.now();
+        }
+        getLogsForDate(selectedDate).push({
+          title: btn.textContent.trim(),
+          calories: Number(btn.dataset.kcal || 0),
+          protein_g: Number(btn.dataset.p || 0),
+          carbs_g: Number(btn.dataset.c || 0),
+          fat_g: Number(btn.dataset.f || 0),
+          hydration_ml: Number(btn.dataset.ml || 0),
+          ts: Date.now()
+        });
+        saveState();
+        renderDashboard();
+        renderFasting();
+      });
+    });
+
+    // 拍照/相册上传（带客户端自动压缩）
+    document.getElementById('takePhotoBtn').addEventListener('click', () => {
+      document.getElementById('cameraInput').click();
+    });
+
+    document.getElementById('cameraInput').addEventListener('change', async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const btn = document.getElementById('takePhotoBtn');
+      btn.textContent = '⏳ 正在识别食物...';
+      try {
+        currentBaseImage = await compressImageFile(file, 1280, 0.82);
+        currentDraft = await callGeminiVision({
+          base64Image: currentBaseImage.base64Image,
+          mimeType: currentBaseImage.mimeType,
+          noteText: document.getElementById('refineText').value.trim()
+        });
+        selectedModifiers = {};
+        renderDraftCard();
+      } catch (err) {
+        alert(err.message);
+      } finally {
+        btn.textContent = '📷 拍照 / 相册识热量';
+        e.target.value = '';
+      }
+    });
+
+    // 文字记 / 补充重算
+    document.getElementById('quickTextBtn').addEventListener('click', async () => {
+      const text = prompt('输入你吃了或喝了什么（例如：两个蒸蛋、一杯冰美式、一小把杏仁、半根香蕉）：');
+      if (!text || !text.trim()) return;
+      try {
+        currentBaseImage = null;
+        currentDraft = await callGeminiVision({ noteText: text.trim() });
+        selectedModifiers = {};
+        renderDraftCard();
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+
+    document.getElementById('refineBtn').addEventListener('click', async () => {
+      const note = document.getElementById('refineText').value.trim();
+      if (!note && !currentBaseImage) return;
+      const btn = document.getElementById('refineBtn');
+      btn.textContent = '...';
+      try {
+        currentDraft = await callGeminiVision({
+          base64Image: currentBaseImage?.base64Image,
+          mimeType: currentBaseImage?.mimeType,
+          noteText: note
+        });
+        selectedModifiers = {};
+        renderDraftCard();
+      } catch (err) {
+        alert(err.message);
+      } finally {
+        btn.textContent = '重算';
+      }
+    });
+
+    document.getElementById('confirmEntryBtn').addEventListener('click', () => {
+      if (!currentDraft) return;
+      const isToday = selectedDate === getLocalDateStr();
+      if (isToday && currentDraft.breaks_fast && state.fasting.isFasting) {
+        const ok = confirm('当前处于断食计时中，确认入账将结束断食并开启进食窗口，是否继续？');
+        if (!ok) return;
+        state.fasting.isFasting = false;
+        state.fasting.startTime = Date.now();
+      }
+      const totals = computePreviewTotals();
+      getLogsForDate(selectedDate).push({
+        title: currentDraft.title || '已记录餐食',
+        calories: totals.calories,
+        protein_g: totals.protein_g,
+        carbs_g: totals.carbs_g,
+        fat_g: totals.fat_g,
+        hydration_ml: Number(currentDraft.hydration_ml || 0),
+        ts: Date.now()
+      });
+      currentDraft = null;
+      selectedModifiers = {};
+      document.getElementById('refineText').value = '';
+      renderDraftCard();
+      saveState();
+      renderDashboard();
+      renderFasting();
+    });
+
+    document.getElementById('closeResultBtn').addEventListener('click', () => {
+      currentDraft = null;
+      selectedModifiers = {};
+      renderDraftCard();
+    });
+
+    // 断食控制
+    document.getElementById('toggleFastModeBtn').addEventListener('click', () => {
+      state.fasting.isFasting = !state.fasting.isFasting;
+      state.fasting.startTime = Date.now();
+      saveState();
+      renderFasting();
+    });
+
+    document.getElementById('adjustFastBackBtn').addEventListener('click', () => {
+      state.fasting.startTime -= 3600 * 1000;
+      saveState();
+      renderFasting();
+    });
+
+    document.getElementById('resetFastBtn').addEventListener('click', () => {
+      state.fasting.startTime = Date.now();
+      saveState();
+      renderFasting();
+    });
+
+    document.getElementById('clearTodayBtn').addEventListener('click', () => {
+      if (!confirm('确定清空当日所有饮食记录？')) return;
+      state.dailyLogs[selectedDate] = [];
+      saveState();
+      renderDashboard();
+    });
+
+    // 设置与数据备份
+    document.getElementById('openSettingsBtn').addEventListener('click', () => {
+      document.getElementById('apiKeyInput').value = state.apiKey || '';
+      document.getElementById('cfgKcal').value = state.targets.kcal;
+      document.getElementById('cfgWater').value = state.targets.water;
+      document.getElementById('cfgProtein').value = state.targets.protein;
+      document.getElementById('cfgCarbs').value = state.targets.carbs;
+      document.getElementById('cfgWeightUnit').value = state.targets.weightUnit || 'kg';
+      document.getElementById('settingsModal').classList.remove('hidden');
+    });
+
+    document.getElementById('closeSettingsBtn').addEventListener('click', () => {
+      document.getElementById('settingsModal').classList.add('hidden');
+    });
+
+    document.getElementById('saveSettingsBtn').addEventListener('click', () => {
+      state.apiKey = document.getElementById('apiKeyInput').value.trim();
+      state.targets.kcal = Number(document.getElementById('cfgKcal').value || 1500);
+      state.targets.water = Number(document.getElementById('cfgWater').value || 2000);
+      state.targets.protein = Number(document.getElementById('cfgProtein').value || 110);
+      state.targets.carbs = Number(document.getElementById('cfgCarbs').value || 100);
+      state.targets.weightUnit = document.getElementById('cfgWeightUnit').value || 'kg';
+      saveState();
+      document.getElementById('settingsModal').classList.add('hidden');
+      renderDashboard();
+    });
+
+    document.getElementById('exportBackupBtn').addEventListener('click', () => {
+      const exportObj = { ...state, apiKey: '' }; // 导出备份时自动脱敏 API Key
+      const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `snapfast-backup-${getLocalDateStr()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    document.getElementById('importBackupBtn').addEventListener('click', () => {
+      document.getElementById('importFileInput').click();
+    });
+
+    document.getElementById('importFileInput').addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const imported = JSON.parse(reader.result);
+          const keepKey = state.apiKey;
+          state = {
+            ...structuredClone(defaultState),
+            ...imported,
+            apiKey: imported.apiKey || keepKey
+          };
+          saveState();
+          renderDashboard();
+          renderFasting();
+          alert('备份数据已成功恢复！');
+        } catch (err) {
+          alert('备份文件格式无效：' + err.message);
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    });
+
+    renderDashboard();
+    renderFasting();
+    setInterval(renderFasting, 30000);
+  </script>
+</body>
+</html>
