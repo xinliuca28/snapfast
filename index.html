@@ -10,7 +10,7 @@
   <meta name="theme-color" content="#f8fafc" />
   <link id="appleTouchIcon" rel="apple-touch-icon" href="apple-touch-icon.png" />
   <title>SnapFast · 简食轻断</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
   <style>
     :root {
       --sat: env(safe-area-inset-top, 20px);
@@ -208,7 +208,7 @@
         <button id="closeResultBtn" class="text-xs text-slate-400 px-2 py-1">取消</button>
       </div>
 
-      <!-- 餐次选择（早餐/午餐/晚餐/加餐饮品） -->
+      <!-- 餐次选择 -->
       <div class="space-y-1">
         <div class="text-[11px] font-medium text-slate-500">归入餐次</div>
         <div id="draftMealTabs" class="grid grid-cols-4 gap-1.5">
@@ -229,7 +229,7 @@
 
       <p id="coachTip" class="text-xs bg-slate-50 p-2.5 rounded-xl text-slate-600 leading-relaxed"></p>
 
-      <!-- 补录模式勾选（非进食时间补记不破断食） -->
+      <!-- 补录模式勾选 -->
       <label class="flex items-center gap-2 text-xs text-slate-600 bg-slate-50 px-3 py-2 rounded-xl cursor-pointer">
         <input id="draftBackfillCheck" type="checkbox" checked class="w-4 h-4 accent-emerald-600 rounded" />
         <span>补录模式（仅记入当日账本，不打断当前断食状态）</span>
@@ -246,7 +246,7 @@
       </div>
     </section>
 
-    <!-- 分餐记录明细（早/午/晚/加餐） -->
+    <!-- 分餐记录明细 -->
     <section class="bg-white rounded-2xl p-4 shadow-xs border border-slate-100 space-y-3">
       <div class="flex items-center justify-between">
         <h2 class="text-sm font-semibold text-slate-800"><span id="logSectionDateTitle">今日</span>分餐饮食明细</h2>
@@ -269,6 +269,21 @@
     </div>
   </div>
 
+  <!-- 多行文字输入弹窗（支持一次输入多种食物） -->
+  <div id="textInputModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white rounded-t-3xl sm:rounded-2xl max-w-md w-full p-5 space-y-3 safe-bottom-bar">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-slate-900">✍️ 文字记录（支持一次输多种）</h3>
+        <button id="closeTextModalBtn" class="text-xs text-slate-400 px-2 py-1">关闭</button>
+      </div>
+      <p class="text-[11px] text-slate-500">把这顿吃的所有菜、主食、饮品或零食一起写下来，用逗号或换行隔开即可：</p>
+      <textarea id="multiFoodInput" rows="4" placeholder="例如：&#10;两个蒸蛋、一杯冰拿铁&#10;一小把原味杏仁、半个苹果" class="w-full px-3 py-2.5 rounded-2xl border border-slate-200 focus:outline-none focus:border-emerald-500 resize-none"></textarea>
+      <button id="submitTextFoodBtn" class="w-full py-3 rounded-2xl bg-emerald-600 active:bg-emerald-700 disabled:bg-slate-400 text-white text-sm font-bold transition">
+        开始 AI 拆解估算
+      </button>
+    </div>
+  </div>
+
   <!-- 自定义断食窗口弹窗 -->
   <div id="fastModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-white rounded-t-3xl sm:rounded-2xl max-w-md w-full p-5 space-y-3.5 safe-bottom-bar">
@@ -285,7 +300,6 @@
         </select>
       </div>
 
-      <!-- 固定窗口模式 -->
       <div id="scheduleFields" class="space-y-2.5 text-xs">
         <div class="grid grid-cols-2 gap-2.5">
           <div>
@@ -300,7 +314,6 @@
         <div id="schedulePreview" class="bg-indigo-50 text-indigo-900 p-2.5 rounded-xl font-medium"></div>
       </div>
 
-      <!-- 手动模式 -->
       <div id="manualFields" class="hidden space-y-2.5 text-xs">
         <div class="grid grid-cols-2 gap-2.5">
           <div>
@@ -327,7 +340,7 @@
     </div>
   </div>
 
-  <!-- 快捷按钮补录确认弹窗（仅手动断食模式触发） -->
+  <!-- 快捷按钮补录确认弹窗 -->
   <div id="backfillModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-xs w-full p-5 space-y-3 text-center">
       <div class="text-base font-bold text-slate-900">当前处于断食期</div>
@@ -353,7 +366,6 @@
         <input id="apiKeyInput" type="password" placeholder="AIza..." class="w-full px-3 py-2 rounded-xl border border-slate-200" />
       </div>
 
-      <!-- 根据每日体重自动核算热量 -->
       <div class="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-3.5 space-y-2.5">
         <label class="flex items-center justify-between cursor-pointer">
           <div>
@@ -404,7 +416,6 @@
         </div>
       </div>
 
-      <!-- 手动热量与宏量营养素目标 -->
       <div class="grid grid-cols-2 gap-2.5 text-xs">
         <div id="manualKcalBox">
           <label class="text-slate-500">手动热量目标 (kcal)</label>
@@ -435,7 +446,6 @@
         </div>
       </div>
 
-      <!-- 备份与恢复 -->
       <div class="pt-2 border-t border-slate-100 space-y-2">
         <div class="text-xs font-medium text-slate-600">本地数据备份（建议定期存一份到 iCloud 文件）</div>
         <div class="flex gap-2">
@@ -511,7 +521,7 @@
       },
       targets: { kcal: 1450, protein: 110, carbs: 100, fat: 55, water: 2000, weightUnit: 'kg' },
       fasting: {
-        mode: 'schedule', // 'schedule' | 'manual'
+        mode: 'schedule',
         eatStart: '11:00',
         eatEnd: '19:00',
         isFasting: true,
@@ -572,7 +582,6 @@
       return state.dailyLogs[dateStr];
     }
 
-    // 获取指定日期用于核算热量的有效体重（优先当日 -> 最近历史记录 -> 默认基准体重）
     function getEffectiveWeightForDate(dateStr) {
       if (state.weights[dateStr] !== undefined) {
         return { weight: state.weights[dateStr], source: '当日体重' };
@@ -590,7 +599,6 @@
       return { weight: Number(state.profile.defaultWeight || 60), source: '默认体重' };
     }
 
-    // 按 Mifflin-St Jeor 公式计算热量目标
     function calcTargetFromWeight(weightVal, profile, unit) {
       const kg = unit === 'lbs' ? (weightVal / 2.20462) : weightVal;
       const h = Number(profile.heightCm || 165);
@@ -669,7 +677,6 @@
       const pct = Math.min(100, Math.round((water / (state.targets.water || 2000)) * 100));
       document.getElementById('waterBar').style.width = pct + '%';
 
-      // 分餐渲染（早/午/晚/加餐饮品）
       const logsEl = document.getElementById('logsContainer');
       logsEl.innerHTML = MEAL_GROUPS.map(group => {
         const groupItems = logs
@@ -886,7 +893,6 @@
           stageEl.textContent = `距离今日关窗开始断食还剩 ${formatMinsHM(rem)}`;
         }
       } else {
-        // 手动计时模式
         toggleBtn.classList.remove('hidden');
         const elapsedMins = Math.floor(Math.max(0, Date.now() - state.fasting.startTime) / 60000);
         const hrs = elapsedMins / 60;
@@ -954,50 +960,69 @@
         alert('请先点击右上角「⚙️ 设置」，填入你的 Gemini API Key。');
         return null;
       }
-      const prompt = `你是专业临床营养师。请分析用户的餐食、饮品、坚果、水果或零食记录。
-拆解所有可见或提到的项目，估算克重/容量、热量、蛋白质、碳水、脂肪与有效补水量(hydration_ml，无糖美式/茶/白水按容量的85%-100%算补水，拿铁按85%算补水，固体为0)。
-同时判断最可能的餐次 suggested_meal（仅限 breakfast / lunch / dinner / snack 之一），并为当前项目动态生成 0~2 个最关键的微调维度（如烹饪用油、牛排部位、坚果份量、汤底酱汁、甜度等）。
-严格输出 JSON：
+      const prompt = `你是专业营养师。用户可能一次输入多种食物和饮品，请务必把提到的每一项全部拆解到 items 数组中，不要遗漏。
+估算每项克重/容量、热量、蛋白质、碳水、脂肪及总有效补水量(hydration_ml，无糖美式/茶/水按85%-100%，拿铁按85%，固体为0)。
+判断最可能的餐次 suggested_meal（仅限 breakfast / lunch / dinner / snack），并给出 0~1 个关键微调维度。
+仅输出纯 JSON：
 {
-  "title": "本餐或饮品简短标题",
+  "title": "本餐简短汇总标题",
   "suggested_meal": "lunch",
   "breaks_fast": true,
   "hydration_ml": 0,
-  "items": [{"name": "名称", "weight_g": 100, "calories": 150, "protein_g": 10, "carbs_g": 5, "fat_g": 8}],
+  "items": [{"name": "食物名", "weight_g": 100, "calories": 150, "protein_g": 10, "carbs_g": 5, "fat_g": 8}],
   "modifiers": [
     {
-      "label": "微调维度名",
+      "label": "微调项",
       "options": [
-        {"text": "选项A", "calorie_delta": -50, "protein_delta": 0, "carbs_delta": 0, "fat_delta": -5},
-        {"text": "默认估算", "calorie_delta": 0, "protein_delta": 0, "carbs_delta": 0, "fat_delta": 0}
+        {"text": "默认估算", "calorie_delta": 0, "protein_delta": 0, "carbs_delta": 0, "fat_delta": 0},
+        {"text": "少油/减量", "calorie_delta": -50, "protein_delta": 0, "carbs_delta": 0, "fat_delta": -5}
       ]
     }
   ],
-  "coach_tip": "一句话减脂建议"
+  "coach_tip": "一句话建议"
 }`;
 
       const parts = [];
       if (base64Image) {
         parts.push({ inline_data: { mime_type: mimeType || 'image/jpeg', data: base64Image } });
       }
-      parts.push({ text: noteText ? `${prompt}\n用户补充说明：${noteText}` : prompt });
+      parts.push({ text: noteText ? `${prompt}\n用户输入内容：${noteText}` : prompt });
 
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${encodeURIComponent(state.apiKey)}`;
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts }],
-          generationConfig: { responseMimeType: 'application/json' }
-        })
-      });
-      if (!res.ok) {
-        const errText = await res.text();
-        throw new Error(`API 请求失败 (${res.status}): ${errText.slice(0, 120)}`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 25000);
+
+      try {
+        const url = `[https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=$](https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=$){encodeURIComponent(state.apiKey)}`;
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          signal: controller.signal,
+          body: JSON.stringify({
+            contents: [{ parts }],
+            generationConfig: { responseMimeType: 'application/json' }
+          })
+        });
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(`API 请求失败 (${res.status}): ${errText.slice(0, 120)}`);
+        }
+        const data = await res.json();
+        let rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        rawText = rawText.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
+        if (!rawText) throw new Error('AI 未返回有效内容，请重试一次。');
+        const parsed = JSON.parse(rawText);
+        if (!parsed || !Array.isArray(parsed.items)) {
+          throw new Error('返回格式异常，请重试一次。');
+        }
+        return parsed;
+      } catch (err) {
+        if (err.name === 'AbortError') {
+          throw new Error('请求超时（超过25秒），请检查网络后重试。');
+        }
+        throw err;
+      } finally {
+        clearTimeout(timeoutId);
       }
-      const data = await res.json();
-      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-      return JSON.parse(rawText);
     }
 
     function computePreviewTotals() {
@@ -1079,7 +1104,7 @@
       const totals = computePreviewTotals();
       document.getElementById('previewKcal').textContent = totals.calories;
       document.getElementById('previewMacros').textContent = `P ${totals.protein_g}g · C ${totals.carbs_g}g · F ${totals.fat_g}g`;
-      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
     }
 
     document.querySelectorAll('.meal-tab-btn').forEach(btn => {
@@ -1116,7 +1141,7 @@
       renderDashboard();
     });
 
-    // 体重保存（自动重新核算热量）
+    // 体重保存
     document.getElementById('saveWeightBtn').addEventListener('click', () => {
       const raw = document.getElementById('weightInput').value.trim();
       if (!raw) {
@@ -1130,7 +1155,7 @@
       renderDashboard();
     });
 
-    // 快捷饮品/早餐按钮（支持补录不破断食）
+    // 快捷饮品/早餐按钮
     function commitQuickEntry(entry, breakFast) {
       if (breakFast && state.fasting.mode === 'manual') {
         state.fasting.isFasting = false;
@@ -1189,14 +1214,17 @@
       const file = e.target.files?.[0];
       if (!file) return;
       const btn = document.getElementById('takePhotoBtn');
+      btn.disabled = true;
       btn.textContent = '⏳ 正在识别食物...';
       try {
         currentBaseImage = await compressImageFile(file, 1280, 0.82);
-        currentDraft = await callGeminiVision({
+        const res = await callGeminiVision({
           base64Image: currentBaseImage.base64Image,
           mimeType: currentBaseImage.mimeType,
           noteText: document.getElementById('refineText').value.trim()
         });
+        if (!res) return;
+        currentDraft = res;
         currentDraftMeal = ['breakfast', 'lunch', 'dinner', 'snack'].includes(currentDraft?.suggested_meal)
           ? currentDraft.suggested_meal
           : guessCurrentMealType();
@@ -1205,25 +1233,51 @@
       } catch (err) {
         alert(err.message);
       } finally {
+        btn.disabled = false;
         btn.textContent = '📷 拍照 / 相册识热量';
         e.target.value = '';
       }
     });
 
-    // 文字记 / 补充重算
-    document.getElementById('quickTextBtn').addEventListener('click', async () => {
-      const text = prompt('输入吃了或喝了什么（例如：中午吃了牛肉面、晚上喝了无糖乌龙茶、一小把杏仁）：');
-      if (!text || !text.trim()) return;
+    // 多行文字输入弹窗逻辑
+    const textInputModal = document.getElementById('textInputModal');
+    const multiFoodInput = document.getElementById('multiFoodInput');
+    const submitTextFoodBtn = document.getElementById('submitTextFoodBtn');
+
+    document.getElementById('quickTextBtn').addEventListener('click', () => {
+      textInputModal.classList.remove('hidden');
+      setTimeout(() => multiFoodInput.focus(), 100);
+    });
+
+    document.getElementById('closeTextModalBtn').addEventListener('click', () => {
+      textInputModal.classList.add('hidden');
+    });
+
+    submitTextFoodBtn.addEventListener('click', async () => {
+      const text = multiFoodInput.value.trim();
+      if (!text) {
+        alert('请先输入你吃或喝的食物名称');
+        return;
+      }
+      submitTextFoodBtn.disabled = true;
+      submitTextFoodBtn.textContent = '⏳ AI 正在拆解计算...';
       try {
         currentBaseImage = null;
-        currentDraft = await callGeminiVision({ noteText: text.trim() });
+        const res = await callGeminiVision({ noteText: text });
+        if (!res) return;
+        currentDraft = res;
         currentDraftMeal = ['breakfast', 'lunch', 'dinner', 'snack'].includes(currentDraft?.suggested_meal)
           ? currentDraft.suggested_meal
           : guessCurrentMealType();
         selectedModifiers = {};
+        multiFoodInput.value = '';
+        textInputModal.classList.add('hidden');
         renderDraftCard();
       } catch (err) {
         alert(err.message);
+      } finally {
+        submitTextFoodBtn.disabled = false;
+        submitTextFoodBtn.textContent = '开始 AI 拆解估算';
       }
     });
 
@@ -1231,18 +1285,22 @@
       const note = document.getElementById('refineText').value.trim();
       if (!note && !currentBaseImage) return;
       const btn = document.getElementById('refineBtn');
-      btn.textContent = '...';
+      btn.disabled = true;
+      btn.textContent = '计算中...';
       try {
-        currentDraft = await callGeminiVision({
+        const res = await callGeminiVision({
           base64Image: currentBaseImage?.base64Image,
           mimeType: currentBaseImage?.mimeType,
           noteText: note
         });
+        if (!res) return;
+        currentDraft = res;
         selectedModifiers = {};
         renderDraftCard();
       } catch (err) {
         alert(err.message);
       } finally {
+        btn.disabled = false;
         btn.textContent = '重算';
       }
     });
