@@ -478,10 +478,38 @@
     const V1_KEY = 'snapfast_v1_state';
 
     const MEAL_GROUPS = [
-      { key: 'breakfast', label: '🌅 早餐' },
-      { key: 'lunch', label: '☀️ 午餐' },
-      { key: 'dinner', label: '🌙 晚餐' },
-      { key: 'snack', label: '🥜 加餐 / 饮品' }
+      {
+        key: 'breakfast',
+        label: '🌅 早餐',
+        headerBg: 'rgba(232, 218, 178, 0.48)',
+        cardBg: 'rgba(232, 218, 178, 0.16)',
+        borderColor: 'rgba(208, 190, 142, 0.45)',
+        titleColor: '#6B5B35'
+      },
+      {
+        key: 'lunch',
+        label: '☀️ 午餐',
+        headerBg: 'rgba(226, 194, 198, 0.48)',
+        cardBg: 'rgba(226, 194, 198, 0.16)',
+        borderColor: 'rgba(205, 165, 171, 0.45)',
+        titleColor: '#6E4950'
+      },
+      {
+        key: 'dinner',
+        label: '🌙 晚餐',
+        headerBg: 'rgba(232, 203, 168, 0.48)',
+        cardBg: 'rgba(232, 203, 168, 0.16)',
+        borderColor: 'rgba(210, 176, 136, 0.45)',
+        titleColor: '#6E5236'
+      },
+      {
+        key: 'snack',
+        label: '🥜 加餐 / 饮品',
+        headerBg: 'rgba(206, 197, 218, 0.48)',
+        cardBg: 'rgba(206, 197, 218, 0.16)',
+        borderColor: 'rgba(178, 166, 194, 0.45)',
+        titleColor: '#524663'
+      }
     ];
 
     function getLocalDateStr(dateObj = new Date()) {
@@ -683,23 +711,23 @@
         const subWater = Math.round(groupItems.reduce((s, x) => s + Number(x.item.hydration_ml || 0), 0));
 
         return `
-          <div class="rounded-xl border border-slate-100 bg-slate-50/60 overflow-hidden">
-            <div class="flex items-center justify-between px-3 py-2 bg-slate-100/70 text-xs">
-              <span class="font-semibold text-slate-800">${group.label}</span>
-              <span class="text-slate-500">
-                <strong class="text-slate-700">${subKcal}</strong> kcal${subWater ? ` · ${subWater}ml` : ''}
+          <div class="rounded-xl border overflow-hidden" style="background-color: ${group.cardBg}; border-color: ${group.borderColor};">
+            <div class="flex items-center justify-between px-3 py-2 text-xs" style="background-color: ${group.headerBg};">
+              <span class="font-semibold" style="color: ${group.titleColor};">${group.label}</span>
+              <span style="color: ${group.titleColor}; opacity: 0.85;">
+                <strong>${subKcal}</strong> kcal${subWater ? ` · ${subWater}ml` : ''}
               </span>
             </div>
-            <div class="divide-y divide-slate-100 px-3">
+            <div class="divide-y divide-black/5 px-3">
               ${groupItems.length ? groupItems.map(({ item, rawIdx }) => `
                 <div class="flex items-center justify-between py-2 text-xs">
                   <div class="min-w-0 pr-2">
                     <div class="font-medium text-slate-800 truncate">${escapeHtml(item.title)}</div>
-                    <div class="text-[11px] text-slate-400">P ${item.protein_g}g · C ${item.carbs_g}g · F ${item.fat_g}g${item.hydration_ml ? ` · 补水 ${item.hydration_ml}ml` : ''}</div>
+                    <div class="text-[11px] text-slate-500">P ${item.protein_g}g · C ${item.carbs_g}g · F ${item.fat_g}g${item.hydration_ml ? ` · 补水 ${item.hydration_ml}ml` : ''}</div>
                   </div>
                   <div class="flex items-center gap-2 shrink-0">
                     <span class="font-semibold text-slate-700">${Math.round(item.calories)} kcal</span>
-                    <button type="button" data-del-idx="${rawIdx}" class="del-log-btn text-slate-300 active:text-rose-500 text-sm px-1">✕</button>
+                    <button type="button" data-del-idx="${rawIdx}" class="del-log-btn text-slate-400 active:text-rose-500 text-sm px-1">✕</button>
                   </div>
                 </div>
               `).join('') : '<div class="py-2 text-[11px] text-slate-400">暂无记录</div>'}
