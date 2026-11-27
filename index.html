@@ -10,7 +10,7 @@
   <meta name="theme-color" content="#f8fafc" />
   <link id="appleTouchIcon" rel="apple-touch-icon" href="apple-touch-icon.png" />
   <title>SnapFast · 简食轻断</title>
-  <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root {
       --sat: env(safe-area-inset-top, 20px);
@@ -208,7 +208,6 @@
         <button id="closeResultBtn" class="text-xs text-slate-400 px-2 py-1">取消</button>
       </div>
 
-      <!-- 餐次选择 -->
       <div class="space-y-1">
         <div class="text-[11px] font-medium text-slate-500">归入餐次</div>
         <div id="draftMealTabs" class="grid grid-cols-4 gap-1.5">
@@ -229,7 +228,6 @@
 
       <p id="coachTip" class="text-xs bg-slate-50 p-2.5 rounded-xl text-slate-600 leading-relaxed"></p>
 
-      <!-- 补录模式勾选 -->
       <label class="flex items-center gap-2 text-xs text-slate-600 bg-slate-50 px-3 py-2 rounded-xl cursor-pointer">
         <input id="draftBackfillCheck" type="checkbox" checked class="w-4 h-4 accent-emerald-600 rounded" />
         <span>补录模式（仅记入当日账本，不打断当前断食状态）</span>
@@ -269,7 +267,7 @@
     </div>
   </div>
 
-  <!-- 多行文字输入弹窗（支持一次输入多种食物） -->
+  <!-- 多行文字输入弹窗 -->
   <div id="textInputModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-white rounded-t-3xl sm:rounded-2xl max-w-md w-full p-5 space-y-3 safe-bottom-bar">
       <div class="flex items-center justify-between">
@@ -462,7 +460,6 @@
   </div>
 
   <script>
-    // iOS Safari 添加主屏幕引导
     (function checkIosStandalone() {
       const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
       const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
@@ -992,7 +989,7 @@
       const timeoutId = setTimeout(() => controller.abort(), 25000);
 
       try {
-        const url = `[https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=$](https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=$){encodeURIComponent(state.apiKey)}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${encodeURIComponent(state.apiKey)}`;
         const res = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1114,7 +1111,6 @@
       });
     });
 
-    // 日期与日历事件
     document.getElementById('prevDayBtn').addEventListener('click', () => {
       selectedDate = shiftDateStr(selectedDate, -1);
       renderDashboard();
@@ -1141,7 +1137,6 @@
       renderDashboard();
     });
 
-    // 体重保存
     document.getElementById('saveWeightBtn').addEventListener('click', () => {
       const raw = document.getElementById('weightInput').value.trim();
       if (!raw) {
@@ -1155,7 +1150,6 @@
       renderDashboard();
     });
 
-    // 快捷饮品/早餐按钮
     function commitQuickEntry(entry, breakFast) {
       if (breakFast && state.fasting.mode === 'manual') {
         state.fasting.isFasting = false;
@@ -1205,7 +1199,6 @@
       document.getElementById('backfillModal').classList.add('hidden');
     });
 
-    // 拍照/相册上传
     document.getElementById('takePhotoBtn').addEventListener('click', () => {
       document.getElementById('cameraInput').click();
     });
@@ -1239,7 +1232,6 @@
       }
     });
 
-    // 多行文字输入弹窗逻辑
     const textInputModal = document.getElementById('textInputModal');
     const multiFoodInput = document.getElementById('multiFoodInput');
     const submitTextFoodBtn = document.getElementById('submitTextFoodBtn');
@@ -1339,7 +1331,6 @@
       renderDraftCard();
     });
 
-    // 自定义断食窗口弹窗逻辑
     function updateSchedulePreview() {
       const s = parseTimeToMins(document.getElementById('cfgEatStart').value);
       const e = parseTimeToMins(document.getElementById('cfgEatEnd').value);
@@ -1408,7 +1399,6 @@
       renderDashboard();
     });
 
-    // 设置弹窗与自动热量预览
     function updateSettingsAutoPreview() {
       const auto = document.getElementById('cfgAutoCalc').checked;
       document.getElementById('autoCalcFields').classList.toggle('hidden', !auto);
