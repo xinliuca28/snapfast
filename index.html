@@ -986,7 +986,7 @@
       parts.push({ text: noteText ? `${prompt}\n用户输入内容：${noteText}` : prompt });
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 25000);
+      const timeoutId = setTimeout(() => controller.abort(), 60000);
 
       try {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${encodeURIComponent(state.apiKey)}`;
@@ -996,7 +996,10 @@
           signal: controller.signal,
           body: JSON.stringify({
             contents: [{ parts }],
-            generationConfig: { responseMimeType: 'application/json' }
+            generationConfig: {
+              responseMimeType: 'application/json',
+              thinkingConfig: { thinkingBudget: 0 }
+            }
           })
         });
         if (!res.ok) {
@@ -1014,7 +1017,7 @@
         return parsed;
       } catch (err) {
         if (err.name === 'AbortError') {
-          throw new Error('请求超时（超过25秒），请检查网络后重试。');
+          throw new Error('请求超时（超过60秒），请检查网络后重试。');
         }
         throw err;
       } finally {
