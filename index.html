@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-title" content="SnapFast" />
   <meta name="format-detection" content="telephone=no" />
   <meta name="theme-color" content="#f8fafc" />
-  <link id="appleTouchIcon" rel="apple-touch-icon" href="" />
+  <link id="appleTouchIcon" rel="apple-touch-icon" href="apple-touch-icon.png" />
   <title>SnapFast · 简食轻断</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -452,26 +452,6 @@
   </div>
 
   <script>
-    // 自动生成 iPhone 主屏幕图标
-    (function generateAppleTouchIcon() {
-      try {
-        const canvas = document.createElement('canvas');
-        canvas.width = 180;
-        canvas.height = 180;
-        const ctx = canvas.getContext('2d');
-        const grad = ctx.createLinearGradient(0, 0, 180, 180);
-        grad.addColorStop(0, '#059669');
-        grad.addColorStop(1, '#064e3b');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, 180, 180);
-        ctx.font = '84px -apple-system, Apple Color Emoji, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('🥗', 90, 96);
-        document.getElementById('appleTouchIcon').href = canvas.toDataURL('image/png');
-      } catch (e) {}
-    })();
-
     // iOS Safari 添加主屏幕引导
     (function checkIosStandalone() {
       const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
