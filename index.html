@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <!-- iOS Web App 原生全屏与状态栏配置 -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="SnapFast" />
@@ -26,7 +25,7 @@
     }
     input, select, textarea {
       user-select: text;
-      font-size: 16px !important; /* 防止 iOS Safari 点击输入框自动放大页面 */
+      font-size: 16px !important;
     }
     .safe-top {
       padding-top: calc(var(--sat) + 10px);
@@ -45,7 +44,7 @@
     <div class="max-w-md mx-auto flex items-center justify-between">
       <div>
         <h1 class="text-xl font-bold tracking-tight text-slate-900">SnapFast</h1>
-        <p class="text-[11px] text-slate-500">拍照识热量 · 16:8 轻断食 · 体重打卡</p>
+        <p class="text-[11px] text-slate-500">分餐记录 · 动态体重算热量 · 自定义断食</p>
       </div>
       <div class="flex items-center gap-2">
         <button id="toggleCalendarBtn" class="px-3 py-1.5 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 active:scale-95 transition">
@@ -59,11 +58,11 @@
   </header>
 
   <main id="app" class="max-w-md mx-auto px-4 pt-3 space-y-3.5">
-    <!-- iOS 添加主屏幕提示条（仅在 Safari 浏览器非全屏模式下显示） -->
+    <!-- iOS 添加主屏幕提示条 -->
     <div id="iosInstallBanner" class="hidden bg-emerald-900 text-white rounded-2xl p-3 text-xs flex items-center justify-between gap-2 shadow-sm">
       <div>
         <div class="font-semibold">📲 安装到 iPhone 主屏幕</div>
-        <div class="text-emerald-200 text-[11px] mt-0.5">点击 Safari 底部「分享」图标 →「添加到主屏幕」，即可全屏像原生 App 一样使用</div>
+        <div class="text-emerald-200 text-[11px] mt-0.5">点击 Safari 底部「分享」图标 →「添加到主屏幕」，即可全屏使用</div>
       </div>
       <button id="dismissInstallBtn" class="text-emerald-300 text-sm px-1.5">✕</button>
     </div>
@@ -105,14 +104,15 @@
 
     <!-- 热量与宏量营养素卡片 -->
     <section class="bg-white rounded-2xl p-4 shadow-xs border border-slate-100 space-y-3">
-      <div class="flex items-center justify-between">
+      <div class="flex items-start justify-between gap-2">
         <div>
           <span class="text-xs text-slate-500">当日剩余热量预算</span>
           <div class="text-3xl font-bold text-slate-900 tracking-tight mt-0.5"><span id="remainingKcal">1500</span> <span class="text-xs font-normal text-slate-400">kcal</span></div>
+          <div id="kcalCalcNote" class="text-[11px] text-emerald-700 mt-0.5"></div>
         </div>
-        <div class="text-right text-xs text-slate-500 space-y-0.5">
+        <div class="text-right text-xs text-slate-500 space-y-0.5 shrink-0">
           <div>已摄入: <strong id="eatenKcal" class="text-slate-800">0</strong> kcal</div>
-          <div>目标: <span id="targetKcal">1500</span> kcal</div>
+          <div>目标: <strong id="targetKcal" class="text-slate-800">1500</strong> kcal</div>
         </div>
       </div>
 
@@ -137,7 +137,7 @@
       <div class="flex items-center justify-between gap-2">
         <div class="min-w-0">
           <h2 class="text-sm font-semibold text-slate-800">体重记录与曲线</h2>
-          <p id="weightDeltaText" class="text-[11px] text-slate-500 truncate">记录晨起空腹体重，追踪减脂趋势</p>
+          <p id="weightDeltaText" class="text-[11px] text-slate-500 truncate">记录晨起空腹体重，自动核算当日热量</p>
         </div>
         <div class="flex items-center gap-1.5 shrink-0">
           <input id="weightInput" type="number" inputmode="decimal" step="0.1" placeholder="0.0" class="w-20 px-2.5 py-1.5 rounded-xl border border-slate-200 text-right font-semibold focus:outline-none focus:border-emerald-500" />
@@ -148,23 +148,25 @@
       <div id="weightChartBox" class="pt-1"></div>
     </section>
 
-    <!-- 16:8 轻断食卡片 -->
+    <!-- 自定义断食窗口卡片 -->
     <section id="fastCard" class="rounded-2xl p-4 shadow-xs border bg-indigo-950 text-white border-indigo-900 space-y-2.5">
-      <div class="flex items-center justify-between">
+      <div class="flex items-center justify-between gap-2">
         <span id="fastBadge" class="text-xs px-2.5 py-0.5 rounded-full bg-indigo-800 text-indigo-100 font-medium">
-          断食中 · 16:8 模式
+          断食中 · 16:8
         </span>
-        <button id="toggleFastModeBtn" class="text-xs text-indigo-200 underline">切换 16:8 / 进食</button>
+        <button id="editFastWindowBtn" class="text-xs px-2.5 py-1 rounded-lg bg-white/15 active:bg-white/25 font-medium">
+          ✏️ 自定义窗口
+        </button>
       </div>
-      <div class="flex items-baseline justify-between gap-2">
+      <div class="flex items-end justify-between gap-2">
         <div>
           <div class="text-3xl font-bold tabular-nums tracking-tight" id="fastTimerText">00h 00m</div>
-          <div class="text-[11px] text-indigo-200 mt-0.5" id="fastStageText">已开启计时，点击右侧按钮可微调开始时间</div>
+          <div class="text-[11px] opacity-85 mt-0.5" id="fastStageText"></div>
+          <div class="text-[11px] opacity-70 mt-0.5" id="fastWindowLabel"></div>
         </div>
-        <div class="flex gap-1.5 shrink-0">
-          <button id="adjustFastBackBtn" class="px-2.5 py-1.5 rounded-xl bg-indigo-800/90 active:bg-indigo-700 text-xs font-medium">-1h 起始</button>
-          <button id="resetFastBtn" class="px-2.5 py-1.5 rounded-xl bg-indigo-800/90 active:bg-indigo-700 text-xs font-medium">重设</button>
-        </div>
+        <button id="toggleFastModeBtn" class="hidden px-3 py-1.5 rounded-xl bg-white/20 active:bg-white/30 text-xs font-semibold shrink-0">
+          切换状态
+        </button>
       </div>
     </section>
 
@@ -172,8 +174,8 @@
     <section class="bg-white rounded-2xl p-4 shadow-xs border border-slate-100 space-y-3">
       <div class="flex items-center justify-between">
         <div>
-          <h2 class="text-sm font-semibold text-slate-800">有效补水与饮品</h2>
-          <p class="text-[11px] text-slate-500">纯水/美式/无糖茶只算补水；拿铁/饮品同步记热量</p>
+          <h2 class="text-sm font-semibold text-slate-800">有效补水与快捷记</h2>
+          <p class="text-[11px] text-slate-500">随时可补录，非进食时段支持“仅补录不破断食”</p>
         </div>
         <div class="text-sm font-bold text-sky-600"><span id="waterVal">0</span> / <span id="waterTarget">2000</span> ml</div>
       </div>
@@ -181,16 +183,16 @@
         <div id="waterBar" class="h-full bg-sky-500 transition-all duration-300" style="width: 0%"></div>
       </div>
       <div class="grid grid-cols-2 gap-2" id="quickDrinkBtns">
-        <button data-ml="500" data-kcal="0" data-p="0" data-c="0" data-f="0" data-breaks="0" class="quick-item px-3 py-2.5 rounded-xl bg-sky-50 text-sky-800 text-xs font-semibold active:scale-95 transition text-left">
+        <button data-meal="snack" data-ml="500" data-kcal="0" data-p="0" data-c="0" data-f="0" data-breaks="0" class="quick-item px-3 py-2.5 rounded-xl bg-sky-50 text-sky-800 text-xs font-semibold active:scale-95 transition text-left">
           💧 大水杯 · 500ml
         </button>
-        <button data-ml="350" data-kcal="5" data-p="0.3" data-c="0.5" data-f="0" data-breaks="0" class="quick-item px-3 py-2.5 rounded-xl bg-stone-100 text-stone-800 text-xs font-semibold active:scale-95 transition text-left">
+        <button data-meal="snack" data-ml="350" data-kcal="5" data-p="0.3" data-c="0.5" data-f="0" data-breaks="0" class="quick-item px-3 py-2.5 rounded-xl bg-stone-100 text-stone-800 text-xs font-semibold active:scale-95 transition text-left">
           ☕ 冰美式 · 0kcal
         </button>
-        <button data-ml="300" data-kcal="150" data-p="8" data-c="11" data-f="8" data-breaks="1" class="quick-item px-3 py-2.5 rounded-xl bg-amber-50 text-amber-900 text-xs font-semibold active:scale-95 transition text-left">
+        <button data-meal="breakfast" data-ml="300" data-kcal="150" data-p="8" data-c="11" data-f="8" data-breaks="1" class="quick-item px-3 py-2.5 rounded-xl bg-amber-50 text-amber-900 text-xs font-semibold active:scale-95 transition text-left">
           🥛 冰拿铁 · 150kcal
         </button>
-        <button data-ml="0" data-kcal="150" data-p="13" data-c="1.5" data-f="10" data-breaks="1" class="quick-item px-3 py-2.5 rounded-xl bg-emerald-50 text-emerald-900 text-xs font-semibold active:scale-95 transition text-left">
+        <button data-meal="breakfast" data-ml="0" data-kcal="150" data-p="13" data-c="1.5" data-f="10" data-breaks="1" class="quick-item px-3 py-2.5 rounded-xl bg-emerald-50 text-emerald-900 text-xs font-semibold active:scale-95 transition text-left">
           🥚 早餐蒸蛋 · 150kcal
         </button>
       </div>
@@ -206,6 +208,17 @@
         <button id="closeResultBtn" class="text-xs text-slate-400 px-2 py-1">取消</button>
       </div>
 
+      <!-- 餐次选择（早餐/午餐/晚餐/加餐饮品） -->
+      <div class="space-y-1">
+        <div class="text-[11px] font-medium text-slate-500">归入餐次</div>
+        <div id="draftMealTabs" class="grid grid-cols-4 gap-1.5">
+          <button type="button" data-meal-tab="breakfast" class="meal-tab-btn py-1.5 rounded-xl text-xs font-medium border">🌅 早餐</button>
+          <button type="button" data-meal-tab="lunch" class="meal-tab-btn py-1.5 rounded-xl text-xs font-medium border">☀️ 午餐</button>
+          <button type="button" data-meal-tab="dinner" class="meal-tab-btn py-1.5 rounded-xl text-xs font-medium border">🌙 晚餐</button>
+          <button type="button" data-meal-tab="snack" class="meal-tab-btn py-1.5 rounded-xl text-xs font-medium border">🥜 加餐</button>
+        </div>
+      </div>
+
       <div id="itemsList" class="divide-y divide-slate-100 text-xs"></div>
       <div id="modifiersBox" class="space-y-2 pt-1"></div>
 
@@ -215,6 +228,12 @@
       </div>
 
       <p id="coachTip" class="text-xs bg-slate-50 p-2.5 rounded-xl text-slate-600 leading-relaxed"></p>
+
+      <!-- 补录模式勾选（非进食时间补记不破断食） -->
+      <label class="flex items-center gap-2 text-xs text-slate-600 bg-slate-50 px-3 py-2 rounded-xl cursor-pointer">
+        <input id="draftBackfillCheck" type="checkbox" checked class="w-4 h-4 accent-emerald-600 rounded" />
+        <span>补录模式（仅记入当日账本，不打断当前断食状态）</span>
+      </label>
 
       <div class="flex items-center justify-between pt-1">
         <div class="text-sm font-bold text-slate-900">
@@ -227,22 +246,19 @@
       </div>
     </section>
 
-    <!-- 当日记录明细 -->
-    <section class="bg-white rounded-2xl p-4 shadow-xs border border-slate-100 space-y-2">
+    <!-- 分餐记录明细（早/午/晚/加餐） -->
+    <section class="bg-white rounded-2xl p-4 shadow-xs border border-slate-100 space-y-3">
       <div class="flex items-center justify-between">
-        <h2 class="text-sm font-semibold text-slate-800"><span id="logSectionDateTitle">今日</span>饮食与饮品明细</h2>
+        <h2 class="text-sm font-semibold text-slate-800"><span id="logSectionDateTitle">今日</span>分餐饮食明细</h2>
         <button id="clearTodayBtn" class="text-xs text-rose-500">清空当日</button>
       </div>
-      <div id="logsContainer" class="text-xs text-slate-500 space-y-2">
-        <p class="text-slate-400 py-2">当日暂无记录，点击底部相机拍摄食物、饮品、坚果或零食。</p>
-      </div>
+      <div id="logsContainer" class="space-y-3"></div>
     </section>
   </main>
 
-  <!-- iOS 底部悬浮操作栏（适配底部安全区） -->
+  <!-- iOS 底部悬浮操作栏 -->
   <div class="fixed bottom-0 left-0 right-0 z-30 bg-white/90 backdrop-blur-xl border-t border-slate-200/70 px-4 pt-2.5 safe-bottom-bar">
     <div class="max-w-md mx-auto flex items-center gap-2.5">
-      <!-- 去掉 capture 强制属性，让 iPhone 弹出原生“拍照 / 照片图库 / 选取文件”菜单 -->
       <input id="cameraInput" type="file" accept="image/*" class="hidden" />
       <button id="takePhotoBtn" class="flex-1 py-3 px-4 rounded-2xl bg-emerald-600 active:bg-emerald-700 text-white text-sm font-bold flex items-center justify-center gap-2 shadow-sm transition">
         <span>📷 拍照 / 相册识热量</span>
@@ -253,11 +269,82 @@
     </div>
   </div>
 
-  <!-- 设置与备份弹窗 -->
+  <!-- 自定义断食窗口弹窗 -->
+  <div id="fastModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white rounded-t-3xl sm:rounded-2xl max-w-md w-full p-5 space-y-3.5 safe-bottom-bar">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-slate-900">自定义每日断食窗口</h3>
+        <button id="closeFastModalBtn" class="text-xs text-slate-400 px-2 py-1">关闭</button>
+      </div>
+
+      <div class="space-y-1 text-xs">
+        <label class="font-medium text-slate-600">计时模式</label>
+        <select id="fastModeSelect" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white">
+          <option value="schedule">按每日固定进食窗口自动循环（推荐）</option>
+          <option value="manual">手动启停断食计时器</option>
+        </select>
+      </div>
+
+      <!-- 固定窗口模式 -->
+      <div id="scheduleFields" class="space-y-2.5 text-xs">
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="text-slate-500">每日开吃时间</label>
+            <input id="cfgEatStart" type="time" value="11:00" class="w-full px-3 py-2 rounded-xl border border-slate-200 mt-1" />
+          </div>
+          <div>
+            <label class="text-slate-500">每日关窗（开始断食）</label>
+            <input id="cfgEatEnd" type="time" value="19:00" class="w-full px-3 py-2 rounded-xl border border-slate-200 mt-1" />
+          </div>
+        </div>
+        <div id="schedulePreview" class="bg-indigo-50 text-indigo-900 p-2.5 rounded-xl font-medium"></div>
+      </div>
+
+      <!-- 手动模式 -->
+      <div id="manualFields" class="hidden space-y-2.5 text-xs">
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="text-slate-500">当前状态</label>
+            <select id="cfgManualState" class="w-full px-3 py-2 rounded-xl border border-slate-200 mt-1 bg-white">
+              <option value="fasting">断食中</option>
+              <option value="eating">进食中</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-slate-500">目标断食时长 (小时)</label>
+            <input id="cfgManualHours" type="number" min="8" max="36" value="16" class="w-full px-3 py-2 rounded-xl border border-slate-200 mt-1" />
+          </div>
+        </div>
+        <div>
+          <label class="text-slate-500">本次开始时间（可补改）</label>
+          <input id="cfgManualStart" type="datetime-local" class="w-full px-3 py-2 rounded-xl border border-slate-200 mt-1" />
+        </div>
+      </div>
+
+      <button id="saveFastModalBtn" class="w-full py-3 rounded-2xl bg-indigo-900 text-white text-sm font-bold">
+        保存断食设置
+      </button>
+    </div>
+  </div>
+
+  <!-- 快捷按钮补录确认弹窗（仅手动断食模式触发） -->
+  <div id="backfillModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-xs w-full p-5 space-y-3 text-center">
+      <div class="text-base font-bold text-slate-900">当前处于断食期</div>
+      <p class="text-xs text-slate-500 leading-relaxed">这条记录是补录当天早些时候吃的，还是现在刚吃需要结束断食？</p>
+      <div class="space-y-2 pt-1">
+        <button id="backfillOnlyBtn" class="w-full py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-bold">仅补录当日摄入（保持断食）</button>
+        <button id="backfillBreakBtn" class="w-full py-2.5 rounded-xl bg-amber-100 text-amber-900 text-xs font-semibold">现在刚吃（结束断食并开启进食）</button>
+        <button id="backfillCancelBtn" class="w-full py-2 rounded-xl text-slate-400 text-xs">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 设置与体重自动算热量弹窗 -->
   <div id="settingsModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-white rounded-t-3xl sm:rounded-2xl max-w-md w-full p-5 space-y-3.5 max-h-[90vh] overflow-y-auto safe-bottom-bar">
       <div class="flex items-center justify-between">
-        <h3 class="text-base font-bold text-slate-900">API 密钥、目标与数据备份</h3>
+        <h3 class="text-base font-bold text-slate-900">API、体重算热量与备份</h3>
         <button id="closeSettingsBtn" class="text-xs text-slate-400 px-2 py-1">关闭</button>
       </div>
 
@@ -266,9 +353,61 @@
         <input id="apiKeyInput" type="password" placeholder="AIza..." class="w-full px-3 py-2 rounded-xl border border-slate-200" />
       </div>
 
+      <!-- 根据每日体重自动核算热量 -->
+      <div class="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-3.5 space-y-2.5">
+        <label class="flex items-center justify-between cursor-pointer">
+          <div>
+            <div class="text-xs font-bold text-emerald-900">按每日体重自动核算热量目标</div>
+            <div class="text-[11px] text-emerald-700">每次记录新体重，自动按代谢公式重算当日预算</div>
+          </div>
+          <input id="cfgAutoCalc" type="checkbox" class="w-5 h-5 accent-emerald-600" />
+        </label>
+
+        <div id="autoCalcFields" class="space-y-2 pt-1 text-xs">
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="text-slate-600">性别</label>
+              <select id="cfgGender" class="w-full px-2 py-1.5 rounded-xl border border-slate-200 mt-0.5 bg-white">
+                <option value="female">女</option>
+                <option value="male">男</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-slate-600">身高 (cm)</label>
+              <input id="cfgHeight" type="number" inputmode="numeric" class="w-full px-2 py-1.5 rounded-xl border border-slate-200 mt-0.5 bg-white" />
+            </div>
+            <div>
+              <label class="text-slate-600">年龄 (岁)</label>
+              <input id="cfgAge" type="number" inputmode="numeric" class="w-full px-2 py-1.5 rounded-xl border border-slate-200 mt-0.5 bg-white" />
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-slate-600">日常活动量</label>
+              <select id="cfgActivity" class="w-full px-2 py-1.5 rounded-xl border border-slate-200 mt-0.5 bg-white">
+                <option value="1.2">久坐办公 (1.2)</option>
+                <option value="1.375">轻度活动/散步 (1.375)</option>
+                <option value="1.55">每周运动3-5次 (1.55)</option>
+                <option value="1.725">高强度运动 (1.725)</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-slate-600">每日减脂缺口 (kcal)</label>
+              <input id="cfgDeficit" type="number" inputmode="numeric" step="50" class="w-full px-2 py-1.5 rounded-xl border border-slate-200 mt-0.5 bg-white" />
+            </div>
+          </div>
+          <div>
+            <label class="text-slate-600">基准体重（未称重时的默认参考）</label>
+            <input id="cfgDefaultWeight" type="number" inputmode="decimal" step="0.1" class="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 mt-0.5 bg-white" />
+          </div>
+          <div id="autoCalcPreview" class="bg-white/90 text-emerald-900 p-2 rounded-xl text-[11px] leading-relaxed font-medium"></div>
+        </div>
+      </div>
+
+      <!-- 手动热量与宏量营养素目标 -->
       <div class="grid grid-cols-2 gap-2.5 text-xs">
-        <div>
-          <label class="text-slate-500">热量目标 (kcal)</label>
+        <div id="manualKcalBox">
+          <label class="text-slate-500">手动热量目标 (kcal)</label>
           <input id="cfgKcal" type="number" inputmode="numeric" class="w-full px-3 py-2 rounded-xl border border-slate-200 mt-1" />
         </div>
         <div>
@@ -276,14 +415,18 @@
           <input id="cfgWater" type="number" inputmode="numeric" class="w-full px-3 py-2 rounded-xl border border-slate-200 mt-1" />
         </div>
         <div>
-          <label class="text-slate-500">蛋白质 (g)</label>
+          <label class="text-slate-500">蛋白质目标 (g)</label>
           <input id="cfgProtein" type="number" inputmode="numeric" class="w-full px-3 py-2 rounded-xl border border-slate-200 mt-1" />
         </div>
         <div>
           <label class="text-slate-500">碳水上限 (g)</label>
           <input id="cfgCarbs" type="number" inputmode="numeric" class="w-full px-3 py-2 rounded-xl border border-slate-200 mt-1" />
         </div>
-        <div class="col-span-2">
+        <div>
+          <label class="text-slate-500">脂肪上限 (g)</label>
+          <input id="cfgFat" type="number" inputmode="numeric" class="w-full px-3 py-2 rounded-xl border border-slate-200 mt-1" />
+        </div>
+        <div>
           <label class="text-slate-500">体重单位</label>
           <select id="cfgWeightUnit" class="w-full px-3 py-2 rounded-xl border border-slate-200 mt-1 bg-white">
             <option value="kg">公斤 (kg)</option>
@@ -292,9 +435,9 @@
         </div>
       </div>
 
-      <!-- 备份与恢复（防止 iOS 清理缓存丢失记录） -->
+      <!-- 备份与恢复 -->
       <div class="pt-2 border-t border-slate-100 space-y-2">
-        <div class="text-xs font-medium text-slate-600">本地数据备份（建议每周导出一次到 iCloud 文件）</div>
+        <div class="text-xs font-medium text-slate-600">本地数据备份（建议定期存一份到 iCloud 文件）</div>
         <div class="flex gap-2">
           <button id="exportBackupBtn" type="button" class="flex-1 py-2 px-3 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold">⬇️ 导出 JSON 备份</button>
           <button id="importBackupBtn" type="button" class="flex-1 py-2 px-3 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold">⬆️ 导入备份恢复</button>
@@ -309,7 +452,7 @@
   </div>
 
   <script>
-    // 自动生成 iPhone 主屏幕高清圆角图标 (apple-touch-icon)
+    // 自动生成 iPhone 主屏幕图标
     (function generateAppleTouchIcon() {
       try {
         const canvas = document.createElement('canvas');
@@ -329,7 +472,7 @@
       } catch (e) {}
     })();
 
-    // 判断是否为 iOS Safari 浏览器且尚未添加到主屏幕
+    // iOS Safari 添加主屏幕引导
     (function checkIosStandalone() {
       const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
       const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
@@ -343,8 +486,16 @@
       });
     })();
 
-    const STORAGE_KEY = 'snapfast_v2_state';
-    const LEGACY_KEY = 'snapfast_v1_state';
+    const STORAGE_KEY = 'snapfast_v3_state';
+    const V2_KEY = 'snapfast_v2_state';
+    const V1_KEY = 'snapfast_v1_state';
+
+    const MEAL_GROUPS = [
+      { key: 'breakfast', label: '🌅 早餐' },
+      { key: 'lunch', label: '☀️ 午餐' },
+      { key: 'dinner', label: '🌙 晚餐' },
+      { key: 'snack', label: '🥜 加餐 / 饮品' }
+    ];
 
     function getLocalDateStr(dateObj = new Date()) {
       const y = dateObj.getFullYear();
@@ -359,25 +510,65 @@
       return getLocalDateStr(dt);
     }
 
+    function guessCurrentMealType() {
+      const h = new Date().getHours();
+      if (h >= 5 && h < 10) return 'breakfast';
+      if (h >= 10 && h < 15) return 'lunch';
+      if (h >= 15 && h < 21) return 'dinner';
+      return 'snack';
+    }
+
     const defaultState = {
       apiKey: '',
-      targets: { kcal: 1500, protein: 110, carbs: 100, fat: 55, water: 2000, weightUnit: 'kg' },
-      fasting: { isFasting: true, targetHours: 16, startTime: Date.now() },
+      profile: {
+        autoCalc: true,
+        gender: 'female',
+        heightCm: 165,
+        age: 35,
+        activity: 1.375,
+        deficit: 400,
+        defaultWeight: 60
+      },
+      targets: { kcal: 1450, protein: 110, carbs: 100, fat: 55, water: 2000, weightUnit: 'kg' },
+      fasting: {
+        mode: 'schedule', // 'schedule' | 'manual'
+        eatStart: '11:00',
+        eatEnd: '19:00',
+        isFasting: true,
+        targetHours: 16,
+        startTime: Date.now()
+      },
       dailyLogs: {},
       weights: {}
     };
 
     function loadInitialState() {
-      const savedV2 = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-      if (savedV2) return savedV2;
-      const legacy = JSON.parse(localStorage.getItem(LEGACY_KEY) || 'null');
+      const savedV3 = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+      if (savedV3) {
+        return {
+          ...structuredClone(defaultState),
+          ...savedV3,
+          profile: { ...defaultState.profile, ...(savedV3.profile || {}) },
+          targets: { ...defaultState.targets, ...(savedV3.targets || {}) },
+          fasting: { ...defaultState.fasting, ...(savedV3.fasting || {}) }
+        };
+      }
+      const savedV2 = JSON.parse(localStorage.getItem(V2_KEY) || 'null');
+      const savedV1 = JSON.parse(localStorage.getItem(V1_KEY) || 'null');
       const base = structuredClone(defaultState);
-      if (legacy) {
-        base.apiKey = legacy.apiKey || '';
-        base.targets = { ...base.targets, ...(legacy.targets || {}) };
-        base.fasting = legacy.fasting || base.fasting;
-        if (Array.isArray(legacy.logs) && legacy.logs.length) {
-          base.dailyLogs[getLocalDateStr()] = legacy.logs;
+      if (savedV2) {
+        base.apiKey = savedV2.apiKey || '';
+        base.targets = { ...base.targets, ...(savedV2.targets || {}) };
+        base.dailyLogs = savedV2.dailyLogs || {};
+        base.weights = savedV2.weights || {};
+        if (savedV2.fasting) {
+          base.fasting = { ...base.fasting, ...savedV2.fasting, mode: 'schedule' };
+        }
+      } else if (savedV1) {
+        base.apiKey = savedV1.apiKey || '';
+        base.targets = { ...base.targets, ...(savedV1.targets || {}) };
+        if (Array.isArray(savedV1.logs) && savedV1.logs.length) {
+          base.dailyLogs[getLocalDateStr()] = savedV1.logs;
         }
       }
       return base;
@@ -388,7 +579,9 @@
     let calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     let currentBaseImage = null;
     let currentDraft = null;
+    let currentDraftMeal = guessCurrentMealType();
     let selectedModifiers = {};
+    let pendingQuickEntry = null;
 
     function saveState() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -397,6 +590,52 @@
     function getLogsForDate(dateStr) {
       if (!state.dailyLogs[dateStr]) state.dailyLogs[dateStr] = [];
       return state.dailyLogs[dateStr];
+    }
+
+    // 获取指定日期用于核算热量的有效体重（优先当日 -> 最近历史记录 -> 默认基准体重）
+    function getEffectiveWeightForDate(dateStr) {
+      if (state.weights[dateStr] !== undefined) {
+        return { weight: state.weights[dateStr], source: '当日体重' };
+      }
+      const dates = Object.keys(state.weights).sort();
+      const prevDates = dates.filter(d => d <= dateStr);
+      if (prevDates.length) {
+        const lastD = prevDates[prevDates.length - 1];
+        return { weight: state.weights[lastD], source: `${lastD.slice(5)}体重` };
+      }
+      if (dates.length) {
+        const latest = dates[dates.length - 1];
+        return { weight: state.weights[latest], source: `${latest.slice(5)}体重` };
+      }
+      return { weight: Number(state.profile.defaultWeight || 60), source: '默认体重' };
+    }
+
+    // 按 Mifflin-St Jeor 公式计算热量目标
+    function calcTargetFromWeight(weightVal, profile, unit) {
+      const kg = unit === 'lbs' ? (weightVal / 2.20462) : weightVal;
+      const h = Number(profile.heightCm || 165);
+      const age = Number(profile.age || 35);
+      const act = Number(profile.activity || 1.375);
+      const def = Number(profile.deficit || 400);
+      const bmr = profile.gender === 'male'
+        ? (10 * kg + 6.25 * h - 5 * age + 5)
+        : (10 * kg + 6.25 * h - 5 * age - 161);
+      const tdee = bmr * act;
+      const target = Math.max(1100, Math.round(tdee - def));
+      return { bmr: Math.round(bmr), tdee: Math.round(tdee), target };
+    }
+
+    function getDailyCalorieTarget(dateStr) {
+      if (!state.profile.autoCalc) {
+        return { target: Number(state.targets.kcal || 1500), note: '手动设定热量目标' };
+      }
+      const unit = state.targets.weightUnit || 'kg';
+      const { weight, source } = getEffectiveWeightForDate(dateStr);
+      const res = calcTargetFromWeight(weight, state.profile, unit);
+      return {
+        target: res.target,
+        note: `基于${source} ${weight}${unit}核算（消耗约 ${res.tdee} - 缺口 ${state.profile.deficit}）`
+      };
     }
 
     function formatDateHeader(dateStr) {
@@ -427,9 +666,13 @@
         water += Number(entry.hydration_ml || 0);
       }
       eatenKcal = Math.round(eatenKcal);
+
+      const { target: dayTargetKcal, note: calcNote } = getDailyCalorieTarget(selectedDate);
       document.getElementById('eatenKcal').textContent = eatenKcal;
-      document.getElementById('targetKcal').textContent = state.targets.kcal;
-      const rem = state.targets.kcal - eatenKcal;
+      document.getElementById('targetKcal').textContent = dayTargetKcal;
+      document.getElementById('kcalCalcNote').textContent = calcNote;
+
+      const rem = dayTargetKcal - eatenKcal;
       const remEl = document.getElementById('remainingKcal');
       remEl.textContent = Math.max(0, rem);
       remEl.className = rem < 0 ? 'text-rose-600' : 'text-slate-900';
@@ -446,33 +689,49 @@
       const pct = Math.min(100, Math.round((water / (state.targets.water || 2000)) * 100));
       document.getElementById('waterBar').style.width = pct + '%';
 
+      // 分餐渲染（早/午/晚/加餐饮品）
       const logsEl = document.getElementById('logsContainer');
-      if (!logs.length) {
-        logsEl.innerHTML = '<p class="text-slate-400 py-2">当日暂无记录，点击底部相机拍摄食物、饮品、坚果或零食。</p>';
-      } else {
-        logsEl.innerHTML = logs.map((item, idx) => `
-          <div class="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
-            <div>
-              <div class="font-medium text-slate-800">${escapeHtml(item.title)}</div>
-              <div class="text-[11px] text-slate-400">P ${item.protein_g}g · C ${item.carbs_g}g · F ${item.fat_g}g${item.hydration_ml ? ` · 补水 ${item.hydration_ml}ml` : ''}</div>
+      logsEl.innerHTML = MEAL_GROUPS.map(group => {
+        const groupItems = logs
+          .map((item, rawIdx) => ({ item, rawIdx }))
+          .filter(({ item }) => (item.mealType || 'snack') === group.key);
+        const subKcal = Math.round(groupItems.reduce((s, x) => s + Number(x.item.calories || 0), 0));
+        const subWater = Math.round(groupItems.reduce((s, x) => s + Number(x.item.hydration_ml || 0), 0));
+
+        return `
+          <div class="rounded-xl border border-slate-100 bg-slate-50/60 overflow-hidden">
+            <div class="flex items-center justify-between px-3 py-2 bg-slate-100/70 text-xs">
+              <span class="font-semibold text-slate-800">${group.label}</span>
+              <span class="text-slate-500">
+                <strong class="text-slate-700">${subKcal}</strong> kcal${subWater ? ` · ${subWater}ml` : ''}
+              </span>
             </div>
-            <div class="flex items-center gap-2.5">
-              <span class="font-semibold text-slate-700">${Math.round(item.calories)} kcal</span>
-              <button type="button" data-del-idx="${idx}" class="del-log-btn text-slate-300 active:text-rose-500 text-sm px-1.5">✕</button>
+            <div class="divide-y divide-slate-100 px-3">
+              ${groupItems.length ? groupItems.map(({ item, rawIdx }) => `
+                <div class="flex items-center justify-between py-2 text-xs">
+                  <div class="min-w-0 pr-2">
+                    <div class="font-medium text-slate-800 truncate">${escapeHtml(item.title)}</div>
+                    <div class="text-[11px] text-slate-400">P ${item.protein_g}g · C ${item.carbs_g}g · F ${item.fat_g}g${item.hydration_ml ? ` · 补水 ${item.hydration_ml}ml` : ''}</div>
+                  </div>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <span class="font-semibold text-slate-700">${Math.round(item.calories)} kcal</span>
+                    <button type="button" data-del-idx="${rawIdx}" class="del-log-btn text-slate-300 active:text-rose-500 text-sm px-1">✕</button>
+                  </div>
+                </div>
+              `).join('') : '<div class="py-2 text-[11px] text-slate-400">暂无记录</div>'}
             </div>
           </div>
-        `).reverse().join('');
+        `;
+      }).join('');
 
-        logsEl.querySelectorAll('.del-log-btn').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const idx = Number(btn.dataset.delIdx);
-            state.dailyLogs[selectedDate].splice(idx, 1);
-            saveState();
-            renderDashboard();
-            renderCalendar();
-          });
+      logsEl.querySelectorAll('.del-log-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = Number(btn.dataset.delIdx);
+          state.dailyLogs[selectedDate].splice(idx, 1);
+          saveState();
+          renderDashboard();
         });
-      }
+      });
 
       renderWeightSection();
       renderCalendar();
@@ -489,7 +748,7 @@
       const chartBox = document.getElementById('weightChartBox');
 
       if (!sortedDates.length) {
-        deltaEl.textContent = '记录晨起空腹体重，追踪减脂趋势';
+        deltaEl.textContent = '记录晨起空腹体重，自动核算当日热量';
         chartBox.innerHTML = '';
         return;
       }
@@ -542,9 +801,7 @@
       let goalCount = 0;
       let cellsHtml = '';
 
-      for (let i = 0; i < firstDayWeek; i++) {
-        cellsHtml += '<div></div>';
-      }
+      for (let i = 0; i < firstDayWeek; i++) cellsHtml += '<div></div>';
 
       for (let d = 1; d <= daysInMonth; d++) {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
@@ -552,16 +809,17 @@
         const weight = state.weights[dateStr];
         const hasLog = logs.length > 0;
         const totalKcal = logs.reduce((sum, it) => sum + Number(it.calories || 0), 0);
+        const dayGoal = getDailyCalorieTarget(dateStr).target;
 
         if (hasLog || weight !== undefined) checkinCount++;
-        if (hasLog && totalKcal <= state.targets.kcal) goalCount++;
+        if (hasLog && totalKcal <= dayGoal) goalCount++;
 
         const isSelected = dateStr === selectedDate;
         const isToday = dateStr === todayStr;
 
         let dotHtml = '<span class="w-1.5 h-1.5 rounded-full bg-transparent inline-block"></span>';
         if (hasLog) {
-          dotHtml = totalKcal <= state.targets.kcal
+          dotHtml = totalKcal <= dayGoal
             ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>'
             : '<span class="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block"></span>';
         }
@@ -588,31 +846,90 @@
       });
     }
 
-    function renderFasting() {
-      const elapsedMs = Math.max(0, Date.now() - state.fasting.startTime);
-      const totalMins = Math.floor(elapsedMs / 60000);
-      const hrs = Math.floor(totalMins / 60);
-      const mins = totalMins % 60;
-      document.getElementById('fastTimerText').textContent = `${String(hrs).padStart(2, '0')}h ${String(mins).padStart(2, '0')}m`;
+    function parseTimeToMins(tStr) {
+      const [h, m] = String(tStr || '11:00').split(':').map(Number);
+      return (h || 0) * 60 + (m || 0);
+    }
 
+    function formatMinsHM(totalMins) {
+      const safe = Math.max(0, Math.floor(totalMins));
+      const h = Math.floor(safe / 60);
+      const m = safe % 60;
+      return `${String(h).padStart(2, '0')}h ${String(m).padStart(2, '0')}m`;
+    }
+
+    function renderFasting() {
       const card = document.getElementById('fastCard');
       const badge = document.getElementById('fastBadge');
-      const stage = document.getElementById('fastStageText');
+      const timerEl = document.getElementById('fastTimerText');
+      const stageEl = document.getElementById('fastStageText');
+      const windowEl = document.getElementById('fastWindowLabel');
+      const toggleBtn = document.getElementById('toggleFastModeBtn');
 
-      if (state.fasting.isFasting) {
-        card.className = 'rounded-2xl p-4 shadow-xs border bg-indigo-950 text-white border-indigo-900 space-y-2.5';
-        badge.className = 'text-xs px-2.5 py-0.5 rounded-full bg-indigo-800 text-indigo-100 font-medium';
-        badge.textContent = `断食中 · ${state.fasting.targetHours}:8 模式`;
-        const rem = Math.max(0, state.fasting.targetHours * 60 - totalMins);
-        const remH = Math.floor(rem / 60);
-        const remM = rem % 60;
-        let phase = hrs >= 14 ? '脂肪加速动员阶段' : (hrs >= 12 ? '糖原逐步消耗阶段' : '血糖平稳过渡阶段');
-        stage.textContent = `${phase} · 距满 ${state.fasting.targetHours}h 剩 ${remH}h ${remM}m`;
+      if (state.fasting.mode === 'schedule') {
+        toggleBtn.classList.add('hidden');
+        const startMins = parseTimeToMins(state.fasting.eatStart);
+        const endMins = parseTimeToMins(state.fasting.eatEnd);
+        const eatDur = (endMins - startMins + 1440) % 1440 || 480;
+        const fastDur = 1440 - eatDur;
+        const fastH = Math.round((fastDur / 60) * 10) / 10;
+        const eatH = Math.round((eatDur / 60) * 10) / 10;
+
+        const now = new Date();
+        const nowMins = now.getHours() * 60 + now.getMinutes();
+        let isEating = false;
+        if (startMins < endMins) {
+          isEating = nowMins >= startMins && nowMins < endMins;
+        } else {
+          isEating = nowMins >= startMins || nowMins < endMins;
+        }
+
+        windowEl.textContent = `每日进食窗口：${state.fasting.eatStart} - ${state.fasting.eatEnd}（${fastH}:${eatH}）`;
+
+        if (!isEating) {
+          const elapsed = (nowMins - endMins + 1440) % 1440;
+          const rem = Math.max(0, fastDur - elapsed);
+          const hrs = elapsed / 60;
+          card.className = 'rounded-2xl p-4 shadow-xs border bg-indigo-950 text-white border-indigo-900 space-y-2.5';
+          badge.className = 'text-xs px-2.5 py-0.5 rounded-full bg-indigo-800 text-indigo-100 font-medium';
+          badge.textContent = `断食中 · ${fastH}:${eatH} 计划`;
+          timerEl.textContent = formatMinsHM(elapsed);
+          const phase = hrs >= 14 ? '脂肪加速动员阶段' : (hrs >= 12 ? '糖原逐步消耗阶段' : '血糖平稳过渡阶段');
+          stageEl.textContent = `${phase} · 距离开吃还剩 ${formatMinsHM(rem)}`;
+        } else {
+          const elapsed = (nowMins - startMins + 1440) % 1440;
+          const rem = Math.max(0, eatDur - elapsed);
+          card.className = 'rounded-2xl p-4 shadow-xs border bg-amber-50 text-slate-900 border-amber-200 space-y-2.5';
+          badge.className = 'text-xs px-2.5 py-0.5 rounded-full bg-amber-200 text-amber-900 font-medium';
+          badge.textContent = `进食窗口中 · ${fastH}:${eatH}`;
+          timerEl.textContent = formatMinsHM(rem);
+          stageEl.textContent = `距离今日关窗开始断食还剩 ${formatMinsHM(rem)}`;
+        }
       } else {
-        card.className = 'rounded-2xl p-4 shadow-xs border bg-amber-50 text-slate-900 border-amber-200 space-y-2.5';
-        badge.className = 'text-xs px-2.5 py-0.5 rounded-full bg-amber-200 text-amber-900 font-medium';
-        badge.textContent = '进食窗口中';
-        stage.textContent = `已开启进食计时（${hrs}h ${mins}m），结束进食可切回断食`;
+        // 手动计时模式
+        toggleBtn.classList.remove('hidden');
+        const elapsedMins = Math.floor(Math.max(0, Date.now() - state.fasting.startTime) / 60000);
+        const hrs = elapsedMins / 60;
+        const targetH = Number(state.fasting.targetHours || 16);
+        timerEl.textContent = formatMinsHM(elapsedMins);
+        const startDt = new Date(state.fasting.startTime);
+        windowEl.textContent = `手动模式 · 开始于 ${String(startDt.getHours()).padStart(2, '0')}:${String(startDt.getMinutes()).padStart(2, '0')}`;
+
+        if (state.fasting.isFasting) {
+          card.className = 'rounded-2xl p-4 shadow-xs border bg-indigo-950 text-white border-indigo-900 space-y-2.5';
+          badge.className = 'text-xs px-2.5 py-0.5 rounded-full bg-indigo-800 text-indigo-100 font-medium';
+          badge.textContent = `手动断食中 · 目标 ${targetH}h`;
+          toggleBtn.textContent = '结束断食';
+          const rem = Math.max(0, targetH * 60 - elapsedMins);
+          const phase = hrs >= 14 ? '脂肪加速动员阶段' : (hrs >= 12 ? '糖原逐步消耗阶段' : '血糖平稳过渡阶段');
+          stageEl.textContent = `${phase} · 距满 ${targetH}h 剩 ${formatMinsHM(rem)}`;
+        } else {
+          card.className = 'rounded-2xl p-4 shadow-xs border bg-amber-50 text-slate-900 border-amber-200 space-y-2.5';
+          badge.className = 'text-xs px-2.5 py-0.5 rounded-full bg-amber-200 text-amber-900 font-medium';
+          badge.textContent = '手动进食中';
+          toggleBtn.textContent = '开始断食';
+          stageEl.textContent = `已进食 ${formatMinsHM(elapsedMins)}，结束后点右侧开启断食`;
+        }
       }
     }
 
@@ -620,7 +937,6 @@
       return String(str || '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s]));
     }
 
-    // 针对 iPhone 高像素照片做客户端轻量压缩（防止照片太大导致上传慢或超限）
     function compressImageFile(file, maxSide = 1280, quality = 0.82) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -660,10 +976,11 @@
       }
       const prompt = `你是专业临床营养师。请分析用户的餐食、饮品、坚果、水果或零食记录。
 拆解所有可见或提到的项目，估算克重/容量、热量、蛋白质、碳水、脂肪与有效补水量(hydration_ml，无糖美式/茶/白水按容量的85%-100%算补水，拿铁按85%算补水，固体为0)。
-同时为当前项目动态生成 0~2 个最关键的微调维度（如烹饪用油、牛排部位、坚果份量、汤底酱汁、甜度等），每个选项给出 calorie_delta、protein_delta、carbs_delta、fat_delta。
+同时判断最可能的餐次 suggested_meal（仅限 breakfast / lunch / dinner / snack 之一），并为当前项目动态生成 0~2 个最关键的微调维度（如烹饪用油、牛排部位、坚果份量、汤底酱汁、甜度等）。
 严格输出 JSON：
 {
   "title": "本餐或饮品简短标题",
+  "suggested_meal": "lunch",
   "breaks_fast": true,
   "hydration_ml": 0,
   "items": [{"name": "名称", "weight_g": 100, "calories": 150, "protein_g": 10, "carbs_g": 5, "fat_g": 8}],
@@ -730,6 +1047,13 @@
       };
     }
 
+    function renderDraftMealTabs() {
+      document.querySelectorAll('.meal-tab-btn').forEach(btn => {
+        const active = btn.dataset.mealTab === currentDraftMeal;
+        btn.className = `meal-tab-btn py-1.5 rounded-xl text-xs font-medium border transition ${active ? 'bg-emerald-600 text-white border-emerald-600 font-semibold' : 'bg-slate-50 text-slate-700 border-slate-200'}`;
+      });
+    }
+
     function renderDraftCard() {
       if (!currentDraft) {
         document.getElementById('resultCard').classList.add('hidden');
@@ -739,6 +1063,7 @@
       card.classList.remove('hidden');
       document.getElementById('mealTitle').textContent = currentDraft.title || '已识别餐食';
       document.getElementById('coachTip').textContent = currentDraft.coach_tip || '';
+      renderDraftMealTabs();
 
       document.getElementById('itemsList').innerHTML = (currentDraft.items || []).map(it => `
         <div class="py-1.5 flex justify-between">
@@ -777,6 +1102,13 @@
       card.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
+    document.querySelectorAll('.meal-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentDraftMeal = btn.dataset.mealTab;
+        renderDraftMealTabs();
+      });
+    });
+
     // 日期与日历事件
     document.getElementById('prevDayBtn').addEventListener('click', () => {
       selectedDate = shiftDateStr(selectedDate, -1);
@@ -804,7 +1136,7 @@
       renderDashboard();
     });
 
-    // 体重保存
+    // 体重保存（自动重新核算热量）
     document.getElementById('saveWeightBtn').addEventListener('click', () => {
       const raw = document.getElementById('weightInput').value.trim();
       if (!raw) {
@@ -818,33 +1150,57 @@
       renderDashboard();
     });
 
-    // 快捷饮品/早餐按钮
+    // 快捷饮品/早餐按钮（支持补录不破断食）
+    function commitQuickEntry(entry, breakFast) {
+      if (breakFast && state.fasting.mode === 'manual') {
+        state.fasting.isFasting = false;
+        state.fasting.startTime = Date.now();
+      }
+      getLogsForDate(selectedDate).push(entry);
+      saveState();
+      renderDashboard();
+      renderFasting();
+    }
+
     document.querySelectorAll('.quick-item').forEach(btn => {
       btn.addEventListener('click', () => {
-        const isToday = selectedDate === getLocalDateStr();
-        const breaks = btn.dataset.breaks === '1';
-        if (isToday && breaks && state.fasting.isFasting) {
-          const ok = confirm('当前处于断食计时中，记录此项将结束本次断食并进入进食窗口，是否继续？');
-          if (!ok) return;
-          state.fasting.isFasting = false;
-          state.fasting.startTime = Date.now();
-        }
-        getLogsForDate(selectedDate).push({
+        const entry = {
           title: btn.textContent.trim(),
+          mealType: btn.dataset.meal || 'snack',
           calories: Number(btn.dataset.kcal || 0),
           protein_g: Number(btn.dataset.p || 0),
           carbs_g: Number(btn.dataset.c || 0),
           fat_g: Number(btn.dataset.f || 0),
           hydration_ml: Number(btn.dataset.ml || 0),
           ts: Date.now()
-        });
-        saveState();
-        renderDashboard();
-        renderFasting();
+        };
+        const isToday = selectedDate === getLocalDateStr();
+        const breaks = btn.dataset.breaks === '1';
+        if (isToday && breaks && state.fasting.mode === 'manual' && state.fasting.isFasting) {
+          pendingQuickEntry = entry;
+          document.getElementById('backfillModal').classList.remove('hidden');
+          return;
+        }
+        commitQuickEntry(entry, false);
       });
     });
 
-    // 拍照/相册上传（带客户端自动压缩）
+    document.getElementById('backfillOnlyBtn').addEventListener('click', () => {
+      if (pendingQuickEntry) commitQuickEntry(pendingQuickEntry, false);
+      pendingQuickEntry = null;
+      document.getElementById('backfillModal').classList.add('hidden');
+    });
+    document.getElementById('backfillBreakBtn').addEventListener('click', () => {
+      if (pendingQuickEntry) commitQuickEntry(pendingQuickEntry, true);
+      pendingQuickEntry = null;
+      document.getElementById('backfillModal').classList.add('hidden');
+    });
+    document.getElementById('backfillCancelBtn').addEventListener('click', () => {
+      pendingQuickEntry = null;
+      document.getElementById('backfillModal').classList.add('hidden');
+    });
+
+    // 拍照/相册上传
     document.getElementById('takePhotoBtn').addEventListener('click', () => {
       document.getElementById('cameraInput').click();
     });
@@ -861,6 +1217,9 @@
           mimeType: currentBaseImage.mimeType,
           noteText: document.getElementById('refineText').value.trim()
         });
+        currentDraftMeal = ['breakfast', 'lunch', 'dinner', 'snack'].includes(currentDraft?.suggested_meal)
+          ? currentDraft.suggested_meal
+          : guessCurrentMealType();
         selectedModifiers = {};
         renderDraftCard();
       } catch (err) {
@@ -873,11 +1232,14 @@
 
     // 文字记 / 补充重算
     document.getElementById('quickTextBtn').addEventListener('click', async () => {
-      const text = prompt('输入你吃了或喝了什么（例如：两个蒸蛋、一杯冰美式、一小把杏仁、半根香蕉）：');
+      const text = prompt('输入吃了或喝了什么（例如：中午吃了牛肉面、晚上喝了无糖乌龙茶、一小把杏仁）：');
       if (!text || !text.trim()) return;
       try {
         currentBaseImage = null;
         currentDraft = await callGeminiVision({ noteText: text.trim() });
+        currentDraftMeal = ['breakfast', 'lunch', 'dinner', 'snack'].includes(currentDraft?.suggested_meal)
+          ? currentDraft.suggested_meal
+          : guessCurrentMealType();
         selectedModifiers = {};
         renderDraftCard();
       } catch (err) {
@@ -907,16 +1269,16 @@
 
     document.getElementById('confirmEntryBtn').addEventListener('click', () => {
       if (!currentDraft) return;
+      const isBackfill = document.getElementById('draftBackfillCheck').checked;
       const isToday = selectedDate === getLocalDateStr();
-      if (isToday && currentDraft.breaks_fast && state.fasting.isFasting) {
-        const ok = confirm('当前处于断食计时中，确认入账将结束断食并开启进食窗口，是否继续？');
-        if (!ok) return;
+      if (!isBackfill && isToday && currentDraft.breaks_fast && state.fasting.mode === 'manual' && state.fasting.isFasting) {
         state.fasting.isFasting = false;
         state.fasting.startTime = Date.now();
       }
       const totals = computePreviewTotals();
       getLogsForDate(selectedDate).push({
         title: currentDraft.title || '已记录餐食',
+        mealType: currentDraftMeal || 'snack',
         calories: totals.calories,
         protein_g: totals.protein_g,
         carbs_g: totals.carbs_g,
@@ -939,7 +1301,61 @@
       renderDraftCard();
     });
 
-    // 断食控制
+    // 自定义断食窗口弹窗逻辑
+    function updateSchedulePreview() {
+      const s = parseTimeToMins(document.getElementById('cfgEatStart').value);
+      const e = parseTimeToMins(document.getElementById('cfgEatEnd').value);
+      const eatDur = (e - s + 1440) % 1440 || 480;
+      const fastDur = 1440 - eatDur;
+      const fH = Math.round((fastDur / 60) * 10) / 10;
+      const eH = Math.round((eatDur / 60) * 10) / 10;
+      document.getElementById('schedulePreview').textContent = `自动计算：每日断食 ${fH} 小时 / 进食 ${eH} 小时（${document.getElementById('cfgEatEnd').value} 开始断食至次日 ${document.getElementById('cfgEatStart').value}）`;
+    }
+
+    function toDatetimeLocalValue(ts) {
+      const d = new Date(ts);
+      const pad = n => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function syncFastModalFields() {
+      const mode = document.getElementById('fastModeSelect').value;
+      document.getElementById('scheduleFields').classList.toggle('hidden', mode !== 'schedule');
+      document.getElementById('manualFields').classList.toggle('hidden', mode !== 'manual');
+      updateSchedulePreview();
+    }
+
+    document.getElementById('editFastWindowBtn').addEventListener('click', () => {
+      document.getElementById('fastModeSelect').value = state.fasting.mode || 'schedule';
+      document.getElementById('cfgEatStart').value = state.fasting.eatStart || '11:00';
+      document.getElementById('cfgEatEnd').value = state.fasting.eatEnd || '19:00';
+      document.getElementById('cfgManualState').value = state.fasting.isFasting ? 'fasting' : 'eating';
+      document.getElementById('cfgManualHours').value = state.fasting.targetHours || 16;
+      document.getElementById('cfgManualStart').value = toDatetimeLocalValue(state.fasting.startTime || Date.now());
+      syncFastModalFields();
+      document.getElementById('fastModal').classList.remove('hidden');
+    });
+
+    document.getElementById('fastModeSelect').addEventListener('change', syncFastModalFields);
+    document.getElementById('cfgEatStart').addEventListener('input', updateSchedulePreview);
+    document.getElementById('cfgEatEnd').addEventListener('input', updateSchedulePreview);
+    document.getElementById('closeFastModalBtn').addEventListener('click', () => {
+      document.getElementById('fastModal').classList.add('hidden');
+    });
+
+    document.getElementById('saveFastModalBtn').addEventListener('click', () => {
+      state.fasting.mode = document.getElementById('fastModeSelect').value;
+      state.fasting.eatStart = document.getElementById('cfgEatStart').value || '11:00';
+      state.fasting.eatEnd = document.getElementById('cfgEatEnd').value || '19:00';
+      state.fasting.isFasting = document.getElementById('cfgManualState').value === 'fasting';
+      state.fasting.targetHours = Number(document.getElementById('cfgManualHours').value || 16);
+      const rawStart = document.getElementById('cfgManualStart').value;
+      if (rawStart) state.fasting.startTime = new Date(rawStart).getTime();
+      saveState();
+      document.getElementById('fastModal').classList.add('hidden');
+      renderFasting();
+    });
+
     document.getElementById('toggleFastModeBtn').addEventListener('click', () => {
       state.fasting.isFasting = !state.fasting.isFasting;
       state.fasting.startTime = Date.now();
@@ -947,33 +1363,57 @@
       renderFasting();
     });
 
-    document.getElementById('adjustFastBackBtn').addEventListener('click', () => {
-      state.fasting.startTime -= 3600 * 1000;
-      saveState();
-      renderFasting();
-    });
-
-    document.getElementById('resetFastBtn').addEventListener('click', () => {
-      state.fasting.startTime = Date.now();
-      saveState();
-      renderFasting();
-    });
-
     document.getElementById('clearTodayBtn').addEventListener('click', () => {
-      if (!confirm('确定清空当日所有饮食记录？')) return;
+      if (!confirm('确定清空当日所有分餐记录？')) return;
       state.dailyLogs[selectedDate] = [];
       saveState();
       renderDashboard();
     });
 
-    // 设置与数据备份
+    // 设置弹窗与自动热量预览
+    function updateSettingsAutoPreview() {
+      const auto = document.getElementById('cfgAutoCalc').checked;
+      document.getElementById('autoCalcFields').classList.toggle('hidden', !auto);
+      document.getElementById('manualKcalBox').classList.toggle('opacity-40', auto);
+      if (!auto) return;
+      const unit = document.getElementById('cfgWeightUnit').value || 'kg';
+      const tempProfile = {
+        gender: document.getElementById('cfgGender').value,
+        heightCm: Number(document.getElementById('cfgHeight').value || 165),
+        age: Number(document.getElementById('cfgAge').value || 35),
+        activity: Number(document.getElementById('cfgActivity').value || 1.375),
+        deficit: Number(document.getElementById('cfgDeficit').value || 400),
+        defaultWeight: Number(document.getElementById('cfgDefaultWeight').value || 60)
+      };
+      const eff = state.weights[selectedDate] !== undefined
+        ? state.weights[selectedDate]
+        : (Object.keys(state.weights).length ? state.weights[Object.keys(state.weights).sort().pop()] : tempProfile.defaultWeight);
+      const res = calcTargetFromWeight(eff, tempProfile, unit);
+      document.getElementById('autoCalcPreview').textContent = `按当前参考体重 ${eff}${unit} 测算：基础代谢(BMR) ${res.bmr} kcal · 每日总消耗(TDEE) ${res.tdee} kcal → 建议每日摄入 ${res.target} kcal`;
+    }
+
+    ['cfgAutoCalc', 'cfgGender', 'cfgHeight', 'cfgAge', 'cfgActivity', 'cfgDeficit', 'cfgDefaultWeight', 'cfgWeightUnit'].forEach(id => {
+      document.getElementById(id).addEventListener('input', updateSettingsAutoPreview);
+      document.getElementById(id).addEventListener('change', updateSettingsAutoPreview);
+    });
+
     document.getElementById('openSettingsBtn').addEventListener('click', () => {
       document.getElementById('apiKeyInput').value = state.apiKey || '';
+      document.getElementById('cfgAutoCalc').checked = !!state.profile.autoCalc;
+      document.getElementById('cfgGender').value = state.profile.gender || 'female';
+      document.getElementById('cfgHeight').value = state.profile.heightCm || 165;
+      document.getElementById('cfgAge').value = state.profile.age || 35;
+      document.getElementById('cfgActivity').value = String(state.profile.activity || 1.375);
+      document.getElementById('cfgDeficit').value = state.profile.deficit ?? 400;
+      document.getElementById('cfgDefaultWeight').value = state.profile.defaultWeight || 60;
+
       document.getElementById('cfgKcal').value = state.targets.kcal;
       document.getElementById('cfgWater').value = state.targets.water;
       document.getElementById('cfgProtein').value = state.targets.protein;
       document.getElementById('cfgCarbs').value = state.targets.carbs;
+      document.getElementById('cfgFat').value = state.targets.fat;
       document.getElementById('cfgWeightUnit').value = state.targets.weightUnit || 'kg';
+      updateSettingsAutoPreview();
       document.getElementById('settingsModal').classList.remove('hidden');
     });
 
@@ -983,10 +1423,20 @@
 
     document.getElementById('saveSettingsBtn').addEventListener('click', () => {
       state.apiKey = document.getElementById('apiKeyInput').value.trim();
+      state.profile = {
+        autoCalc: document.getElementById('cfgAutoCalc').checked,
+        gender: document.getElementById('cfgGender').value,
+        heightCm: Number(document.getElementById('cfgHeight').value || 165),
+        age: Number(document.getElementById('cfgAge').value || 35),
+        activity: Number(document.getElementById('cfgActivity').value || 1.375),
+        deficit: Number(document.getElementById('cfgDeficit').value || 400),
+        defaultWeight: Number(document.getElementById('cfgDefaultWeight').value || 60)
+      };
       state.targets.kcal = Number(document.getElementById('cfgKcal').value || 1500);
       state.targets.water = Number(document.getElementById('cfgWater').value || 2000);
       state.targets.protein = Number(document.getElementById('cfgProtein').value || 110);
       state.targets.carbs = Number(document.getElementById('cfgCarbs').value || 100);
+      state.targets.fat = Number(document.getElementById('cfgFat').value || 55);
       state.targets.weightUnit = document.getElementById('cfgWeightUnit').value || 'kg';
       saveState();
       document.getElementById('settingsModal').classList.add('hidden');
@@ -994,7 +1444,7 @@
     });
 
     document.getElementById('exportBackupBtn').addEventListener('click', () => {
-      const exportObj = { ...state, apiKey: '' }; // 导出备份时自动脱敏 API Key
+      const exportObj = { ...state, apiKey: '' };
       const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -1019,6 +1469,9 @@
           state = {
             ...structuredClone(defaultState),
             ...imported,
+            profile: { ...defaultState.profile, ...(imported.profile || {}) },
+            targets: { ...defaultState.targets, ...(imported.targets || {}) },
+            fasting: { ...defaultState.fasting, ...(imported.fasting || {}) },
             apiKey: imported.apiKey || keepKey
           };
           saveState();
